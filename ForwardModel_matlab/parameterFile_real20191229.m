@@ -1,7 +1,7 @@
-extPath = '/home/harvard/Dropbox (Harvard University)/WorkingData/2019-12-29_DEEP_TFM_Cheng/qd_50_/';
+extPath = './_data_patterns/qd_50_/';
 extNameStem = 'qd_50_';
 
-dataPath = '/home/harvard/Dropbox (Harvard University)/WorkingData/2019-12-29_DEEP_TFM_Cheng/beads_0_5__50_/';
+dataPath = './_data_patterns/beads_0_5__50_/';
 dataNameStem = 'beads_50_';
 
 crop_rect_name = 'crop_rect_20191229_50_fgbg64.mat';

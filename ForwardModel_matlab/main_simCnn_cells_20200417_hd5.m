@@ -75,7 +75,7 @@ fileNameStem = [saveDir sprintf('cells_tr_data_%dsls_',N_sls) date '.h5']
 hdf5_writeDataset(fileNameStem,DataIn,DataGt)
 
 % test read
-dataGt_rd = h5read(fileNameStem,'/input');
+% dataGt_rd = h5read(fileNameStem,'/input');
 
 
 
