@@ -19,7 +19,7 @@ function [Data, O_wf] = readimages_sprscode(dataPath,dataNameStem,crop_rect,Nx,N
         Data_bg = [Data_bg; Data_bg_temp(:)];
         Data(:,:,Nt/2+i) = imresize(imcrop(Data_temp,crop_rect{1}),[Nx Ny]);        
     end
-
+    save('Yreal0.mat','Data');
     O_wf =  imresize(imcrop(imread([dataPath dataNameStem '_1.tif'],1),crop_rect{1}),[Nx Ny]);
     Data_bg = mean(Data_bg);
 %    Data_bg = 300;
