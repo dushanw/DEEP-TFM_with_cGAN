@@ -32,12 +32,7 @@ class Discriminator(nn.Module):
         self.dconv3 = nn.ConvTranspose2d(64, 32, 4, 2, 1)
         self.dconv4 = nn.ConvTranspose2d(32, 16, 4, 2, 1)
         self.dconv5 = nn.ConvTranspose2d(16, 1, 4, 2, 1)
-            
-        # self.scse1 = SCSEBlock(channel=256)
-        # self.scse2 = SCSEBlock(channel=128)
-        # self.scse3 = SCSEBlock(channel=64)
-        # self.scse4 = SCSEBlock(channel=32)
-        # self.scse5 = SCSEBlock(channel=16)
+
         
     def forward(self, x):
 
@@ -47,37 +42,16 @@ class Discriminator(nn.Module):
         e4 = self.re(self.bn4(self.conv4(e3)))
         e5 = self.re(self.bn5(self.conv5(e4)))
         e6 = self.re(self.bn7(self.conv6(e5)))
-
-        
-        #print('e6',e6.size)
-        
         d6 = self.dconv(e6)
         d6 = self.re(self.bn5(d6))
-        #d6 = d6 + self.scse1(d6) 
         d5 = self.dconv1(d6)
-        #d5 = F.interpolate(d5, size=e4.size()[2:], mode='nearest') + e4
-        #d5 = d5 + e4
         d5 = self.re(self.bn4(d5))
-        #d5 = d5 + self.scse2(d5) 
         d4 = self.dconv2(d5) 
-        #d4 = F.interpolate(d4, size=e3.size()[2:], mode='nearest') + e3
-        d4 = self.re(self.bn3(d4))
-        #d4 = d4 + self.scse3(d4) 
+        d4 = self.re(self.bn3(d4)) 
         d3 = self.dconv3(d4) 
-        #d3 = F.interpolate(d3, size=e2.size()[2:], mode='nearest') + e2
         d3 = self.re(self.bn2(d3))
-        #d3 = d3 + self.scse4(d3) 
         d2 = self.dconv4(d3) 
-        #d2 = F.interpolate(d2, size=e1.size()[2:], mode='nearest') + e1
         d2 = self.re(self.bn1(d2))
-        #d2 = d2 + self.scse5(d2) 
         d1 = self.dconv5(d2)
-        
-        #print('d1',d1.size())
-        #d1 = F.interpolate(d1, size=x.size()[2:], mode='nearest') + x
         out = self.re(self.bn6(d1))
-        #out = F.interpolate(out, size=(138,186,186), mode='trilinear')
-        #print('out',out.size())
-        #hidden = self.encode(image)
-        #out = self.decode(hidden)
-        return out#, hidden.view(image.size(0), -1)
+        return out
