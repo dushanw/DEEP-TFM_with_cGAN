@@ -3,38 +3,43 @@ function PSFs = f_simPSFs(pram)
   of        = cd('./_submodules/MC_LightScattering/');
 
   %% set prams
-  mclm_pram           = f_praminit();
-  mclm_pram.savepath  = [of '/_PSFs/'];
-  mclm_pram.fNameStem = 'MC';
-  mclm_pram.Nx        = pram.Nx*4;
-  mclm_pram.dx        = pram.dx;
-  mclm_pram.z0_um     = pram.z0_um;
-  mclm_pram.z0_um     = pram.z0_um;
-  mclm_pram.sl        = pram.sl;
-  mclm_pram.mus       = pram.mus;
-  mclm_pram.lambda_ex = pram.lambda_ex;
-  mclm_pram.lambda_em = pram.lambda_em;
-  mclm_pram.NA        = pram.NA;
-  mclm_pram.Nphotons  = 1E7;
-  mclm_pram.Nsims     = 16;
-  mclm_pram.useGpu    = 1;
+  mcls_pram           = f_praminit();
+  mcls_pram.savepath  = [of '/_PSFs/'];
+  mcls_pram.fNameStem = 'MC';
+  mcls_pram.Nx        = pram.Nx*4+3;
+  mcls_pram.dx        = pram.dx;
+  mcls_pram.z0_um     = pram.z0_um;
+  mcls_pram.z0_um     = pram.z0_um;
+  mcls_pram.sl        = pram.sl;
+  mcls_pram.mus       = pram.mus;
+  mcls_pram.lambda_ex = pram.lambda_ex;
+  mcls_pram.lambda_em = pram.lambda_em;
+  mcls_pram.NA        = pram.NA;
+  mcls_pram.Nphotons  = 1E7;
+  mcls_pram.Nsims     = 16;
+  mcls_pram.useGpu    = 1;
 
   %% simulate sPSF (saves to [mclm_pram.savepath mclm_pram.fNameStem '_sPSF.mat'])
-  main(mclm_pram);
-  load([mclm_pram.savepath mclm_pram.fNameStem '_sPSF.mat']);       % loads sPSF
+  main(mcls_pram);
+  load([mcls_pram.savepath mcls_pram.fNameStem '_sPSF.mat']);       % loads sPSF
   sPSF  = sPSF(2:end-1,2:end-1);
   
   %% simulate exPSF and emPSF
-  cd('/optical_PSF/');
-  exPSF     = Efficient_PSF(mclm_pram.NA, mclm_pram.nm, mclm_pram.lambda_ex, mclm_pram.dx,mclm_pram.Nx,mclm_pram.Nx,2,200);
-  exPSF     = exPSF(:,:,2);
-  emPSF     = Efficient_PSF(mclm_pram.NA, mclm_pram.nm, mclm_pram.lambda_em, mclm_pram.dx,mclm_pram.Nx,mclm_pram.Nx,2,200);
-  emPSF     = emPSF(:,:,2);
+  cd('_supToolboxes/optical_PSF/');
+  APSF_3D     = Efficient_PSF(mcls_pram.NA, mcls_pram.nm, mcls_pram.lambda_ex, mcls_pram.dx,mcls_pram.Nx-2,mcls_pram.Nx-2,2,200);
+  PSF_3D      = abs(APSF_3D{1}).^2+abs(APSF_3D{2}).^2+abs(APSF_3D{3}).^2;
+  exPSF       = PSF_3D(:,:,2);
+  exPSF       = exPSF/sum(exPSF(:));
+  
+  APSF_3D     = Efficient_PSF(mcls_pram.NA, mcls_pram.nm, mcls_pram.lambda_em, mcls_pram.dx,mcls_pram.Nx-2,mcls_pram.Nx-2,2,200);
+  PSF_3D      = abs(APSF_3D{1}).^2+abs(APSF_3D{2}).^2+abs(APSF_3D{3}).^2;
+  emPSF       = PSF_3D(:,:,2);
+  emPSF       = emPSF/sum(emPSF(:));
   cd(of);
   
-  PSFs.exPSF = exPSF;
-  PSFs.emPSF = emPSF;
-  PSFs.sPSF  = sPSF;
+  PSFs.exPSF  = exPSF;
+  PSFs.emPSF  = emPSF;
+  PSFs.sPSF   = sPSF;
   
-  save([mclm_pram.savepath 'PSFs.mat'],'PSFs');       % loads sPSF
+  save([mcls_pram.savepath 'PSFs.mat'],'PSFs');       % save sPSF
 end

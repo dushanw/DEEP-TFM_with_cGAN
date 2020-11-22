@@ -2,6 +2,7 @@
 % main forward model for cGAN-DEEP-TFM
 
 clc;clear all;close all
+addpath('./_extPatternsets/')
 
 pram              = f_pram_init();
 

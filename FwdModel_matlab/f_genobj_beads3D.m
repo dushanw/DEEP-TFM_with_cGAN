@@ -20,7 +20,7 @@ function X0 = f_genobj_beads3D(Ny,Nx,Nz,N_beads)
   [Y,X,Z]   = meshgrid(1:Ny,1:Nx,1:Nz);
     
   for i=1:N_beads
-    i
+    % i
     beads_fll = (Y - centroids(i,1)).^2 + (X - centroids(i,2)).^2 + (Z - centroids(i,3)).^2 < radii(i)^2;
     X0        = X0 + beads_fll*norm_int(i);
   end
