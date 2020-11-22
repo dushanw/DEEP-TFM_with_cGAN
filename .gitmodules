@@ -1,0 +1,3 @@
+[submodule "FwdModel_matlab/_submodules/MC_LightScattering"]
+	path = FwdModel_matlab/_submodules/MC_LightScattering
+	url = git@github.com:dushanw/MC_LightScattering.git
