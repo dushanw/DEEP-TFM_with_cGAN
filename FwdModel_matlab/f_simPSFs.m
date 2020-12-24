@@ -41,5 +41,5 @@ function PSFs = f_simPSFs(pram)
   PSFs.emPSF  = emPSF;
   PSFs.sPSF   = sPSF;
   
-  save([mcls_pram.savepath 'PSFs.mat'],'PSFs');       % save sPSF
+  save([mcls_pram.savepath 'PSFs.mat'],'PSFs','mcls_pram');       % save sPSF
 end
