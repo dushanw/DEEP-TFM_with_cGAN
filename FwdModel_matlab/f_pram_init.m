@@ -21,8 +21,8 @@ function pram = f_pram_init()
   pram.psf_typ      = 'MC';                             % {'MC','gaussian',...}
   
   %% data size parameters
-  pram.Nx      = 64;
-  pram.Ny      = 64;
+  pram.Nx      = 200;
+  pram.Ny      = 200;
   pram.Nz      = 64;
   pram.Nc      = 1;
   pram.Nt      = 128;
@@ -32,7 +32,7 @@ function pram = f_pram_init()
   pram.lambda_ex  = 0.800;                              % [um]      excitation wavelength
   pram.lambda_em  = 0.590;                              % [um]      emission wavelength {0.606 }
   pram.NA         = 1;                                  % [AU]      numerical aperture of the objective
-  pram.z0_um      = -300;                                % [um]  
+  pram.z0_um      = -300;                               % [um]  
   
   %% optical properties of the tissue
   pram.mus        = 200;                                % [cm^-1]   scattering coefficient of tissue
