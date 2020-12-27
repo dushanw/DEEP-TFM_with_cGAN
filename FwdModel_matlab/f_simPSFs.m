@@ -15,8 +15,8 @@ function PSFs = f_simPSFs(pram)
   mcls_pram.lambda_ex = pram.lambda_ex;
   mcls_pram.lambda_em = pram.lambda_em;
   mcls_pram.NA        = pram.NA;
-  mcls_pram.Nphotons  = 1E8;
-  mcls_pram.Nsims     = 16;
+  mcls_pram.Nphotons  = 1E7;
+  mcls_pram.Nsims     = 32;
   mcls_pram.useGpu    = 1;
   
   %% simulate sPSF (saves to [mclm_pram.savepath mclm_pram.fNameStem '_sPSF.mat'])
