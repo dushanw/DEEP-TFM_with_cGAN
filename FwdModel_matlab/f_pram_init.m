@@ -21,8 +21,8 @@ function pram = f_pram_init()
   pram.psf_typ      = 'MC';                             % {'MC','gaussian',...}
   
   %% data size parameters
-  pram.Nx      = 200;
-  pram.Ny      = 200;
+  pram.Nx      = 350;
+  pram.Ny      = 350;
   pram.Nz      = 64;
   pram.Nc      = 1;
   pram.Nt      = 128;

@@ -37,7 +37,7 @@ function PSFs = f_simPSFs(pram)
   emPSF       = emPSF/sum(emPSF(:));
   cd(of);
   %% convolve emPSF and sPSF 
-  emConvSPSF  = conv2(gpuArray(sPSFs),gpuArray(emPSF_gpu),'same');
+  emConvSPSF  = conv2(gpuArray(sPSF),gpuArray(emPSF_gpu),'same');
     
   %% save PSFs
   PSFs.exPSF      = exPSF;
