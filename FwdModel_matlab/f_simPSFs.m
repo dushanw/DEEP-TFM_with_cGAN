@@ -35,11 +35,13 @@ function PSFs = f_simPSFs(pram)
   PSF_3D      = abs(APSF_3D{1}).^2+abs(APSF_3D{2}).^2+abs(APSF_3D{3}).^2;
   emPSF       = PSF_3D(:,:,2);
   emPSF       = emPSF/sum(emPSF(:));
+  
   cd(of);
   
   PSFs.exPSF  = exPSF;
   PSFs.emPSF  = emPSF;
   PSFs.sPSF   = sPSF;
+  PSFs.pram   = mcls_pram;
   
-  save([mcls_pram.savepath 'PSFs.mat'],'PSFs','mcls_pram');       % save sPSF
+  save([mcls_pram.savepath 'PSFs' datestr(datetime('now')) '.mat'],'PSFs','mcls_pram');       % save sPSF
 end
