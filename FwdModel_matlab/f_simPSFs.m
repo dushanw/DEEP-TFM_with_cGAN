@@ -1,13 +1,13 @@
 
 function PSFs = f_simPSFs(pram)
   of        = cd('./_submodules/MC_LightScattering/');
-
+  
   %% set prams
   mcls_pram           = f_praminit();
   mcls_pram.savepath  = [of '/_PSFs/'];
   mcls_pram.fNameStem = 'MC';
   mcls_pram.Nx        = pram.Nx*4+3;
-  mcls_pram.dx        = pram.dx;
+  mcls_pram.dx        = pram.dx/2;
   mcls_pram.z0_um     = pram.z0_um;
   mcls_pram.z0_um     = pram.z0_um;
   mcls_pram.sl        = pram.sl;
@@ -18,7 +18,7 @@ function PSFs = f_simPSFs(pram)
   mcls_pram.Nphotons  = 1E7;
   mcls_pram.Nsims     = 16;
   mcls_pram.useGpu    = 1;
-
+  
   %% simulate sPSF (saves to [mclm_pram.savepath mclm_pram.fNameStem '_sPSF.mat'])
   main(mcls_pram);
   load([mcls_pram.savepath mcls_pram.fNameStem '_sPSF.mat']);       % loads sPSF
@@ -43,5 +43,6 @@ function PSFs = f_simPSFs(pram)
   PSFs.sPSF   = sPSF;
   PSFs.pram   = mcls_pram;
   
-  save([mcls_pram.savepath 'PSFs' datestr(datetime('now')) '.mat'],'PSFs','mcls_pram');       % save sPSF
+  save([mcls_pram.savepath 'PSFs' datestr(datetime('now')) '.mat'],'PSFs'); % save sPSF
+  
 end

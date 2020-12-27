@@ -32,7 +32,7 @@ function pram = f_pram_init()
   pram.lambda_ex  = 0.800;                              % [um]      excitation wavelength
   pram.lambda_em  = 0.590;                              % [um]      emission wavelength {0.606 }
   pram.NA         = 1;                                  % [AU]      numerical aperture of the objective
-  pram.z0_um      = -50;                                % [um]  
+  pram.z0_um      = -300;                                % [um]  
   
   %% optical properties of the tissue
   pram.mus        = 200;                                % [cm^-1]   scattering coefficient of tissue
