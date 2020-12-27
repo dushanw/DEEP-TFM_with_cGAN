@@ -35,14 +35,16 @@ function PSFs = f_simPSFs(pram)
   PSF_3D      = abs(APSF_3D{1}).^2+abs(APSF_3D{2}).^2+abs(APSF_3D{3}).^2;
   emPSF       = PSF_3D(:,:,2);
   emPSF       = emPSF/sum(emPSF(:));
-  
   cd(of);
-  
-  PSFs.exPSF  = exPSF;
-  PSFs.emPSF  = emPSF;
-  PSFs.sPSF   = sPSF;
-  PSFs.pram   = mcls_pram;
-  
+  %% convolve emPSF and sPSF 
+  emConvSPSF  = conv2(gpuArray(sPSFs),gpuArray(emPSF_gpu),'same');
+    
+  %% save PSFs
+  PSFs.exPSF      = exPSF;
+  PSFs.emPSF      = emPSF;
+  PSFs.sPSF       = sPSF;
+  PSFs.emConvSPSF = emConvSPSF;
+  PSFs.pram       = mcls_pram;
+        
   save([mcls_pram.savepath 'PSFs' datestr(datetime('now')) '.mat'],'PSFs'); % save sPSF
-  
 end
