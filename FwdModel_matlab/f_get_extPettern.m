@@ -1,92 +1,53 @@
 
-function [E Y_exp X_refs] = f_get_extPettern(pram)
+function [E Y_exp X_refs pram] = f_get_extPettern(pram)
 
   switch pram.pattern_typ
     case 'dmd_sim_rnd'
       E     = rand([pram.Ny pram.Nx pram.Nt]); % for DMDs
       Y_exp = [];
-    case 'wgd_sim'
-      load wgd_simMMI.mat
-      E     = E0(size(E0,1)/2-pram.Ny/2+1:end,size(E0,2)/2-pram.Nx/2+1:end,:);
-      E     = E(1:pram.Ny,1:pram.Nx,1:pram.Nt);      
-      Y_exp = [];
-    case 'dmd_exp'
-      load dmd_exp_USAF_20200813rsf1.mat
-      E0    = imresize(ExtSync(:,:,2:end),0.26);
-      E     = E0(size(E0,1)/2-pram.Ny/2+1:end,size(E0,2)/2-pram.Nx/2+1:end,:);
-      E     = E(1:pram.Ny,1:pram.Nx,1:pram.Nt);   
-      % E   = E - min(E(:));
-      E     = E./max(E(:));
 
-      Y_exp = imresize(DataSync(:,:,2:end),0.26);
-      Y_exp = Y_exp(size(Y_exp,1)/2-pram.Ny/2+1:end,size(Y_exp,2)/2-pram.Nx/2+1:end,:);
-      Y_exp = Y_exp(1:pram.Ny,1:pram.Nx,1:pram.Nt);   
-      % Y_exp = Y_exp - min(Y_exp(:));
-      Y_exp = Y_exp./max(Y_exp(:));
-    case 'dmd_exp_tfm'
-      load dmd_exp_tfm_mouseBrain_20200903.mat      
-      E     = imresize(Data.Ex(:,:,1:pram.Nt)     ,[pram.Ny pram.Nx]);
-      Y_exp = imresize(Data.z_200um(:,:,1:pram.Nt),[pram.Ny pram.Nx]);        
-    case 'dmd_exp_tfm_beads_3'
-      load dmd_exp_tfm_beads_20200925.mat
-      E     = imresize(single(Data.Ex_3    (:,:,2:pram.Nt+1)) ,[pram.Ny pram.Nx]);
-      Y_exp = imresize(single(Data.beads2_3(:,:,2:pram.Nt+1)) ,[pram.Ny pram.Nx]);
-      X0    = imresize(single(Data.beads2_wf0)                ,[pram.Ny pram.Nx]);
-      Xwf   = imresize(single(Data.beads2_wf(:,:,2:pram.Nt+1)),[pram.Ny pram.Nx]);
-      % normalize
-      E     = E     -  mean(E    ,   3);
-      E     = E     ./ max (E    ,[],3);
+    case 'dmd_exp_tfm_beads_7sls_20201219'
+      load('./_extPatternsets/dmd_exp_tfm_beads_7sls_20201219.mat')
       
-      Y_exp = Y_exp -  mean(Y_exp,   3);
-      Y_exp = Y_exp ./ max (Y_exp(:)  ); 
+      y_inds  = size(Data.Ex,1)-pram.Ny+1:size(Data.Ex,1);      % select the lower left coner as it's brighter
+      x_inds  = 1:pram.Nx;
+      t_inds  = 20 + (1:pram.Nt);
       
-      X0    = X0    ./ max (X0(:)     );      
+      E                   = single(Data.Ex           (y_inds,x_inds,:));
+      Y_exp.beads1        = single(Data.beads1_7sls  (y_inds,x_inds,:));
+      Y_exp.beads2        = single(Data.beads2_7sls  (y_inds,x_inds,:));
+      X_refs.beads1_sf_wf0= single(Data.beads1_sf_wf0(y_inds,x_inds,:));
+      X_refs.beads2_sf_wf0= single(Data.beads2_sf_wf0(y_inds,x_inds,:));
+
+      X_refs.beads1_avg0  = mean(Y_exp.beads1,3);
+      X_refs.beads2_avg0  = mean(Y_exp.beads2,3);
       
-      Xwf   = mean(Xwf,3);
-      Xwf   = Xwf   ./ max (Xwf(:)    );      
+      E                   = E           (:,:,t_inds);
+      Y_exp.beads1        = Y_exp.beads1(:,:,t_inds);
+      Y_exp.beads2        = Y_exp.beads2(:,:,t_inds);
       
-      X_refs.X0   = X0;
-      X_refs.Xwf  = Xwf;    
-    case 'dmd_exp_tfm_beads_4'
-      load dmd_exp_tfm_beads_20200925.mat
-      E     = imresize(single(Data.Ex_4    (:,:,2:pram.Nt+1)) ,[pram.Ny pram.Nx]);
-      Y_exp = imresize(single(Data.beads2_4(:,:,2:pram.Nt+1)) ,[pram.Ny pram.Nx]);
-      X0    = imresize(single(Data.beads2_wf0)                ,[pram.Ny pram.Nx]);
-      Xwf   = imresize(single(Data.beads2_wf(:,:,2:pram.Nt+1)),[pram.Ny pram.Nx]);
-      % normalize
-      E     = E     -  mean(E    ,   3);
-      E     = E     ./ max (E    ,[],3);
+      X_refs.beads1_avg   = mean(Y_exp.beads1,3);
+      X_refs.beads2_avg   = mean(Y_exp.beads2,3);
       
-      Y_exp = Y_exp -  mean(Y_exp,   3);
-      Y_exp = Y_exp ./ max (Y_exp(:)  ); 
+      % normalize E
+      E                   = E - min(E(:));
+      E                   = E / max(E(:));
       
-      X0    = X0    ./ max (X0(:)     );      
+      pram.maxcount         = max([X_refs.beads1_avg0(:); X_refs.beads2_avg0(:)]);
+      pram.dx               = Data.pram_ex.dx0;
+      pram.cam_bias         = Data.pram_beads.bias;
+      pram.cam_ADCfactor    = Data.pram_beads.ADCfactor;
+      pram.cam_EMgain       = Data.pram_beads.EMgain;
+      pram.cam_t_exp        = Data.pram_beads.t_exp / 1e3;    % [s]  
       
-      Xwf   = mean(Xwf,3);
-      Xwf   = Xwf   ./ max (Xwf(:)    );      
-      
-      X_refs.X0   = X0;
-      X_refs.Xwf  = Xwf;    
-    case 'dmd_exp_tfm_beads_8'
-      load dmd_exp_tfm_beads_20200925.mat
-      E     = imresize(single(Data.Ex_8    (:,:,2:pram.Nt+1)) ,[pram.Ny pram.Nx]);
-      Y_exp = imresize(single(Data.beads2_8(:,:,2:pram.Nt+1)) ,[pram.Ny pram.Nx]);
-      X0    = imresize(single(Data.beads2_wf0)                ,[pram.Ny pram.Nx]);
-      Xwf   = imresize(single(Data.beads2_wf(:,:,2:pram.Nt+1)),[pram.Ny pram.Nx]);
-      % normalize
-      E     = E     -  mean(E    ,   3);
-      E     = E     ./ max (E    ,[],3);
-      
-      Y_exp = Y_exp -  mean(Y_exp,   3);
-      Y_exp = Y_exp ./ max (Y_exp(:)  ); 
-      
-      X0    = X0    ./ max (X0(:)     );      
-      
-      Xwf   = mean(Xwf,3);
-      Xwf   = Xwf   ./ max (Xwf(:)    );      
-      
-      X_refs.X0   = X0;
-      X_refs.Xwf  = Xwf;
+      pram.cam_sigma_rd     = 3;                              % [e-]        Read noise      
+      pram.cam_dXdt_dark    = 0.005;                          % [e-/px/s]   Dark current
+      pram.cam_Brnuli_alpha = 0.01;                           %             Probability of a multiplication event in an Em gain stage (=1-2% in Ref2)
+      pram.cam_N_gainStages = round(log(pram.cam_EMgain)/log(1+pram.cam_Brnuli_alpha)); 
+                                                              %             Number of Em-gain stages      
   end
 
 end
+
+
+
