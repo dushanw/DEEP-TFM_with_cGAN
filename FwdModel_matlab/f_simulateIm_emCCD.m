@@ -1,19 +1,14 @@
-function [Xhat XhatADU] = f_simulateIm_emCCD(X0,pram)
-  
+function [Xhat XhatADU] = f_simulateIm_emCCD(X0,emhist,pram)
+
   Xdark   = pram.cam_dXdt_dark * pram.cam_t_exp;     % [e-]    Dark noise
   Xhat    = poissrnd(X0 + Xdark);                    % [e-]    Poisson shot noise  
-
-  if pram.useGPU ==1
-    Xhat  = gpuArray(Xhat);
-  end
-
-  %% Em-process - approximate method with pre simulated distribution
-  max_input_photons = max(Xhat(:));
-  N_reps            = pram.cam_emhist_Nreps;
-  emhist            = f_genEmhist(max_input_photons,N_reps,pram);
-
+  
+  %% Em-process - approximate method with pre simulated distribution 
+  N_reps            = size(emhist,2);
+  max_input_photons = size(emhist,1);
+  
+  Xhat(Xhat>max_input_photons) = max_input_photons;
   for i = 1:max_input_photons
-    i
     i_inds = find(Xhat(:)==i); 
     Xhat(Xhat(:)==i) = emhist(i,randi(N_reps,size(i_inds)));
   end

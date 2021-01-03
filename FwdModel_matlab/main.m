@@ -10,14 +10,22 @@ pram                  = f_pram_init();
 %% simulate sPSF, exPSF, and emPSF
 % PSFs = f_simPSFs(pram);
 load('./_PSFs/PSFs27-Dec-2020 04_21_23.mat')    % load('./_PSFs/PSFs27-Dec-2020 04:21:23.mat')
-emConvSPSF = imresize(PSFs.emConvSPSF,PSFs.pram.dx/pram.dx,'bilinear');
-emPSF      = imresize(PSFs.emPSF,PSFs.pram.dx/pram.dx,'bilinear');
+emConvSPSF  = imresize(PSFs.emConvSPSF,PSFs.pram.dx/pram.dx,'bilinear');
+emPSF       = imresize(PSFs.emPSF,PSFs.pram.dx/pram.dx,'bilinear');
 
 %% simulate training data  
 N_beads     = 500;
 % X0        = f_genobj_beads3D(pram.Ny,pram.Nx,pram.Nz,N_beads);
 X0          = f_genobj_beads3D_1um_4um(N_beads,pram);
 X0          = reshape(X0,[pram.Ny,pram.Nx,1,pram.Nz]);
+
+if pram.useGPU ==1
+  X0          = gpuArray(X0);
+  E           = gpuArray(E);
+  emConvSPSF  = gpuArray(emConvSPSF);
+  emPSF       = gpuArray(emPSF);  
+end
+
 
 tic
 for j=1:pram.Nz
@@ -29,15 +37,17 @@ for j=1:pram.Nz
 end
 toc
 
-Y0             = double(5*pram.maxcount*Y0/max(Y0(:))); 
-Xgt            = 5*Xgt./max(Xgt(:));
+Y0  = double(5*pram.maxcount*Y0/max(Y0(:))); 
+Xgt = 5*Xgt./max(Xgt(:));
+
+% max_input_photons = max(poissrnd(max(Y0(:)),[1 1000]))*2;
+% N_reps            = pram.cam_emhist_Nreps;
+% emhist            = f_genEmhist(max_input_photons,N_reps,pram);
+load('./_emhist/emhist_03-Jan-2021 07_55_31.mat')   % load('./_emhist/emhist_03-Jan-2021 07:55:31.mat')
 
 tic
-[Yhat YhatADU] = f_simulateIm_emCCD(Y0,pram);
+[Yhat YhatADU]    = f_simulateIm_emCCD(Y0,emhist,pram);
 toc
-
-tic;[Yhat YhatADU] = f_simulateIm_emCCD(Y0,pram);toc
-
 
 %% FTS convolution <on test>
 % % Y_conv = conv2(X0(:,:,1,50),PSFs.exPSF,'same'); % this is the same as what's implemented using FFT below 
