@@ -3,11 +3,11 @@ function emhist = f_genEmhist(max_input_photons,N_reps,pram)
 
   in_photons  = [1:max_input_photons]';
 
-  emhist_100  = (repmat(in_photons,[1 N_reps]));  
+  emhist_100  = (repmat(in_photons,[1 100]));
   for i=1:N_reps/100
     emhist{i} = emhist_100;
   end
-  
+   
 %   if pram.useGPU ==1
 %     emhist  = gpuArray(emhist);
 %   end
