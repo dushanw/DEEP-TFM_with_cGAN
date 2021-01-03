@@ -14,13 +14,19 @@ load('./_PSFs/PSFs27-Dec-2020 04_21_23.mat')    % load('./_PSFs/PSFs27-Dec-2020 
 %% simulate training data  
 N_beads     = pram.Nz * 500/64;
 % X0        = f_genobj_beads3D(pram.Ny,pram.Nx,pram.Nz,N_beads);
-X0          = f_genobj_beads3D_1um_4um(N_beads,pram);
-pram.Nz     = size(X0,3);
-X0          = reshape(X0,[pram.Ny,pram.Nx,1,pram.Nz]);
+X0 = [];
+for i=1:8
+  i
+  X0_temp   = f_genobj_beads3D_1um_4um(N_beads,pram);  
+  X0        = cat(4,X0,reshape(X0_temp,[pram.Ny,pram.Nx,1,size(X0_temp,3)]));
+end
 
 tic
 [Yhat Xgt]  = f_fwd(X0,E,PSFs,pram);
 toc
+
+save(['trData_' datestr(datetime('now')) '.mat'],'Yhat','Xgt','Y_exp','X_refs','pram','E');
+% <next write the hd5 save file and an outer loop to simulate more images>
 
 %% FTS convolution <on test>
 % % Y_conv = conv2(X0(:,:,1,50),PSFs.exPSF,'same'); % this is the same as what's implemented using FFT below 
