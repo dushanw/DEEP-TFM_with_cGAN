@@ -24,7 +24,11 @@ function [Yhat Xgt] = f_fwd(X0,E,PSFs,pram)
   % max_input_photons = max(poissrnd(max(Y0(:)),[1 1000]))*2;
   % N_reps            = pram.cam_emhist_Nreps;
   % emhist            = f_genEmhist(max_input_photons,N_reps,pram);
-  load('./_emhist/emhist_03-Jan-2021 07_55_31.mat')   % load('./_emhist/emhist_03-Jan-2021 07:55:31.mat')
+  try
+    load('./_emhist/emhist_03-Jan-2021 07_55_31.mat') 
+  catch
+    load('./_emhist/emhist_03-Jan-2021 07:55:31.mat')
+  end
 
   [Yhat YhatADU]    = f_simulateIm_emCCD(Y0,emhist,pram);
 end
