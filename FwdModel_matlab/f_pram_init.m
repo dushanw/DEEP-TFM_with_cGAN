@@ -39,9 +39,10 @@ function pram = f_pram_init()
     
   %% camera parameters <THIS IS OLD NEED UPDATING WITH THE NEW CAM MODEL>
   pram.binR    = 1;
+  pram.cam_emhist_Nreps = 100;
   
-  %% run environment parameters
-  pram.useGPU  = 0 ;
+  %% run environment parameters  
+  pram.useGPU  = gpuDeviceCount>1 ;
 end
 
 

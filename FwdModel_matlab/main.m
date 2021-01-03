@@ -9,7 +9,7 @@ pram                  = f_pram_init();
 
 %% simulate sPSF, exPSF, and emPSF
 % PSFs = f_simPSFs(pram);
-load('./_PSFs/PSFs27-Dec-2020 04_21_23.mat')
+load('./_PSFs/PSFs27-Dec-2020 04_21_23.mat')    % load('./_PSFs/PSFs27-Dec-2020 04:21:23.mat')
 emConvSPSF = imresize(PSFs.emConvSPSF,PSFs.pram.dx/pram.dx,'bilinear');
 emPSF      = imresize(PSFs.emPSF,PSFs.pram.dx/pram.dx,'bilinear');
 
@@ -33,8 +33,11 @@ Y0             = 5*pram.maxcount*Y0/max(Y0(:));
 Xgt            = 5*Xgt./max(Xgt(:));
 
 tic
-[Yhat YhatADU] = f_simulateIm_emCCD(Y0(:,:,1,1),pram);
+[Yhat YhatADU] = f_simulateIm_emCCD(Y0,pram);
 toc
+
+tic;[Yhat YhatADU] = f_simulateIm_emCCD(Y0,pram);toc
+
 
 %% FTS convolution <on test>
 % % Y_conv = conv2(X0(:,:,1,50),PSFs.exPSF,'same'); % this is the same as what's implemented using FFT below 
