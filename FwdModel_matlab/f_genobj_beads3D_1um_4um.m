@@ -28,5 +28,13 @@ function X0 = f_genobj_beads3D_1um_4um(N_beads,pram)
   end
 
   X0          = imresize3(X0,[pram.Ny pram.Ny pram.Nz],'linear');
+  X0          = X0(:,:,round(min(centroids(:,3))*pram.Nz/Nz0)+1:round(max(centroids(:,3))*pram.Nz/Nz0)-1);
+  
   % volshow(X0)  
 end
+
+
+
+
+
+
