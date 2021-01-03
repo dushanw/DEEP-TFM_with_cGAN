@@ -13,7 +13,6 @@ load('./_PSFs/PSFs27-Dec-2020 04_21_23.mat')
 emConvSPSF = imresize(PSFs.emConvSPSF,PSFs.pram.dx/pram.dx,'bilinear');
 emPSF      = imresize(PSFs.emPSF,PSFs.pram.dx/pram.dx,'bilinear');
 
-
 %% simulate training data  
 N_beads     = 500;
 % X0        = f_genobj_beads3D(pram.Ny,pram.Nx,pram.Nz,N_beads);
