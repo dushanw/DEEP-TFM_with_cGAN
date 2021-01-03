@@ -30,5 +30,10 @@ function emhist = f_genEmhist(max_input_photons,N_reps,pram)
   fprintf('\n')
   toc
 
+  emhist = [emhist{:}];
   
+  mkdir('./_emhist')
+  save(['./_emhist/emhist_' datestr(datetime('now')) '.mat'],'emhist')  
 end
+
+
