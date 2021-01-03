@@ -29,7 +29,7 @@ for j=1:pram.Nz
 end
 toc
 
-Y0             = 5*pram.maxcount*Y0/max(Y0(:)); 
+Y0             = double(5*pram.maxcount*Y0/max(Y0(:))); 
 Xgt            = 5*Xgt./max(Xgt(:));
 
 tic
