@@ -37,7 +37,7 @@ DataGt      = single(DataGt);
 
 %% save simulation data
 N_sls       = abs(pram.z0_um/pram.sl);
-saveDir     = ['./_results/_cnn_synthTrData/' date '/' pram.pattern_typ '_v2/']; 
+saveDir     = ['./_results/_cnn_synthTrData/' date '/' pram.pattern_typ '_v5/']; 
 nameStem    = sprintf('beads_data_%dsls_',N_sls);
 mkdir(saveDir)
 
