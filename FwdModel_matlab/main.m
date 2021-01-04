@@ -8,16 +8,16 @@ pram                  = f_pram_init();
 [E Y_exp X_refs pram] = f_get_extPettern(pram);
 
 %% simulate sPSF, exPSF, and emPSF
-% PSFs = f_simPSFs(pram);
-load('./_PSFs/PSFs27-Dec-2020 04_21_23.mat')          % on Macbook
-% load('./_PSFs/PSFs27-Dec-2020 04:21:23.mat')        % on GPU
+PSFs = f_simPSFs(pram);
+% load('./_PSFs/PSFs27-Dec-2020 04_21_23.mat')        % on Macbook
+% load('./_PSFs/PSFs04-Jan-2021 02:13:34.mat')        % on GPU
 
 %% simulate training data  
 Nmb   = 512;                                          % minibatch size is selected based on f_fwd's run time... 
                                                       % ~500 works ok on GPU.
 tic
 t = 1;
-for j = 1:pram.Nb/Nmb 
+for j = 1:ceil(pram.Nb/Nmb) 
   N_beads     = pram.Nz * 500/64;
   X0 = [];
   for i=1:round(Nmb/pram.Nz)
@@ -37,7 +37,7 @@ DataGt      = single(DataGt);
 
 %% save simulation data
 N_sls       = abs(pram.z0_um/pram.sl);
-saveDir     = ['./_results/_cnn_synthTrData/' date '/' pram.pattern_typ '_v5/']; 
+saveDir     = ['./_results/_cnn_synthTrData/' date '/' pram.pattern_typ '/']; 
 nameStem    = sprintf('beads_data_%dsls_',N_sls);
 mkdir(saveDir)
 
