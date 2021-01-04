@@ -9,24 +9,56 @@ pram                  = f_pram_init();
 
 %% simulate sPSF, exPSF, and emPSF
 % PSFs = f_simPSFs(pram);
-load('./_PSFs/PSFs27-Dec-2020 04_21_23.mat')    % load('./_PSFs/PSFs27-Dec-2020 04:21:23.mat')
+load('./_PSFs/PSFs27-Dec-2020 04_21_23.mat')          % on Macbook
+% load('./_PSFs/PSFs27-Dec-2020 04:21:23.mat')        % on GPU
 
 %% simulate training data  
-N_beads     = pram.Nz * 500/64;
-% X0        = f_genobj_beads3D(pram.Ny,pram.Nx,pram.Nz,N_beads);
-X0 = [];
-for i=1:8
-  i
-  X0_temp   = f_genobj_beads3D_1um_4um(N_beads,pram);  
-  X0        = cat(4,X0,reshape(X0_temp,[pram.Ny,pram.Nx,1,size(X0_temp,3)]));
+Nmb   = 512;                                          % minibatch size is selected based on f_fwd's run time... 
+                                                      % ~500 works ok on GPU.
+t = 1;
+for j = 1:pram.Nb/Nmb 
+  N_beads     = pram.Nz * 500/64;
+  X0 = [];
+  for i=1:round(Nmb/pram.Nz)
+    X0_temp   = f_genobj_beads3D_1um_4um(N_beads,pram);  
+    X0        = cat(4,X0,reshape(X0_temp,[pram.Ny,pram.Nx,1,size(X0_temp,3)]));
+  end
+  Nmb_t       = size(X0,4);
+  
+  [Yhat Xgt]  = f_fwd(X0,E,PSFs,pram);
+  DataIn(:,:,:,t:t+Nmb_t-1) = Yhat;
+  DataGt(:,:,:,t:t+Nmb_t-1) = Xgt; 
+  t = t+Nmb_t;
 end
 
-tic
-[Yhat Xgt]  = f_fwd(X0,E,PSFs,pram);
-toc
+%% save simulation data
+N_sls       = abs(pram.z0_um/pram.sl);
+saveDir     = ['./_results/_cnn_synthTrData/' date '/' pram.pattern_typ '/']; 
+nameStem    = sprintf('beads_data_%dsls_',N_sls);
+mkdir(saveDir)
 
-save(['trData_' datestr(datetime('now')) '.mat'],'Yhat','Xgt','Y_exp','X_refs','pram','E');
-% <next write the hd5 save file and an outer loop to simulate more images>
+save([saveDir nameStem datestr(datetime('now')) '.mat'],'Yhat','Xgt','Y_exp','X_refs','pram','E');
+
+DataIn_tr    = DataIn(:,:,:,129:end);
+DataGt_tr    = DataGt(:,:,:,129:end);
+fileNameStem = [saveDir nameStem '_tr.h5'];
+f_writeDataset_hdf5(fileNameStem,DataIn_tr,DataGt_tr);
+
+DataIn_test  = DataIn(:,:,:,1:128);
+DataGt_test  = DataGt(:,:,:,1:128);
+fileNameStem = [saveDir nameStem '_test.h5'];
+f_writeDataset_hdf5(fileNameStem,DataIn_test,DataGt_test);
+
+DataIn_real_beads1 = Y_exp.beads1;
+DataGt_real_beads1 = X_refs.beads1_sf_wf0;
+fileNameStem = [saveDir nameStem '_real_beads1.h5'];
+f_writeDataset_hdf5(fileNameStem,DataIn_real_beads1,DataGt_real_beads1);
+
+DataIn_real_beads2 = Y_exp.beads2;
+DataGt_real_beads2 = X_refs.beads2_sf_wf0;
+fileNameStem = [saveDir nameStem '_real_beads2.h5'];
+f_writeDataset_hdf5(fileNameStem,DataIn_real_beads2,DataGt_real_beads2);
+
 
 %% FTS convolution <on test>
 % % Y_conv = conv2(X0(:,:,1,50),PSFs.exPSF,'same'); % this is the same as what's implemented using FFT below 
@@ -61,6 +93,23 @@ save(['trData_' datestr(datetime('now')) '.mat'],'Yhat','Xgt','Y_exp','X_refs','
 % 
 % 
 % figure;imagesc([abs(Y(1:end-1,1:end-1,1,50)) - Y_conv(2:end,2:end)]);axis image; colorbar
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -27,7 +27,8 @@ function pram = f_pram_init()
   pram.Ny      = 256;
   pram.Nz      = 64;
   pram.Nc      = 1;
-  pram.Nt      = 8;  
+  pram.Nt      = 8;
+  pram.Nb      = 1e4;                                   %           number of batches (instances)
   pram.dx      = 0.33;
   pram.dz      = 1;
   
@@ -43,6 +44,7 @@ function pram = f_pram_init()
   
   %% run environment parameters  
   pram.useGPU  = gpuDeviceCount>1 ;
+  
 end
 
 
