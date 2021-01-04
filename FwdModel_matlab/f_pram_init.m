@@ -28,7 +28,7 @@ function pram = f_pram_init()
   pram.Nz      = 64;
   pram.Nc      = 1;
   pram.Nt      = 8;
-  pram.Nb      = 1e4;                                   %           number of batches (instances)
+  pram.Nb      = 1e3;                                   %           number of batches (instances)
   pram.dx      = 0.33;
   pram.dz      = 1;
   

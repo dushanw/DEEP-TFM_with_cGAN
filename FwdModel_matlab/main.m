@@ -15,6 +15,7 @@ load('./_PSFs/PSFs27-Dec-2020 04_21_23.mat')          % on Macbook
 %% simulate training data  
 Nmb   = 512;                                          % minibatch size is selected based on f_fwd's run time... 
                                                       % ~500 works ok on GPU.
+tic
 t = 1;
 for j = 1:pram.Nb/Nmb 
   N_beads     = pram.Nz * 500/64;
@@ -26,23 +27,29 @@ for j = 1:pram.Nb/Nmb
   Nmb_t       = size(X0,4);
   
   [Yhat Xgt]  = f_fwd(X0,E,PSFs,pram);
-  DataIn(:,:,:,t:t+Nmb_t-1) = Yhat;
-  DataGt(:,:,:,t:t+Nmb_t-1) = Xgt; 
+  DataIn(:,:,:,t:t+Nmb_t-1) = gather(Yhat);
+  DataGt(:,:,:,t:t+Nmb_t-1) = gather(Xgt); 
   t = t+Nmb_t;
 end
+toc
+DataIn      = single(DataIn);
+DataGt      = single(DataGt);
 
 %% save simulation data
 N_sls       = abs(pram.z0_um/pram.sl);
-saveDir     = ['./_results/_cnn_synthTrData/' date '/' pram.pattern_typ '/']; 
+saveDir     = ['./_results/_cnn_synthTrData/' date '/' pram.pattern_typ '_v2/']; 
 nameStem    = sprintf('beads_data_%dsls_',N_sls);
 mkdir(saveDir)
 
-save([saveDir nameStem datestr(datetime('now')) '.mat'],'Yhat','Xgt','Y_exp','X_refs','pram','E');
+save([saveDir nameStem datestr(datetime('now')) '_pram_plusplus.mat'],'Y_exp','X_refs','pram','E','PSFs');
 
 DataIn_tr    = DataIn(:,:,:,129:end);
 DataGt_tr    = DataGt(:,:,:,129:end);
 fileNameStem = [saveDir nameStem '_tr.h5'];
 f_writeDataset_hdf5(fileNameStem,DataIn_tr,DataGt_tr);
+% test read
+% dataIp_rd = h5read(fileNameStem,'/input');
+% dataGt_rd = h5read(fileNameStem,'/gt');
 
 DataIn_test  = DataIn(:,:,:,1:128);
 DataGt_test  = DataGt(:,:,:,1:128);
@@ -93,23 +100,3 @@ f_writeDataset_hdf5(fileNameStem,DataIn_real_beads2,DataGt_real_beads2);
 % 
 % 
 % figure;imagesc([abs(Y(1:end-1,1:end-1,1,50)) - Y_conv(2:end,2:end)]);axis image; colorbar
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
