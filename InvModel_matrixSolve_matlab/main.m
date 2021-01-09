@@ -8,8 +8,8 @@ addpath('../FwdModel_matlab/')
 addpath('../FwdModel_matlab/_extPatternsets/')
 
 pram = f_pram_init_invMatSolv();
-Nx_list = [8 16];
-Ny_list = [8 16];
+Nx_list = [8 16 32 64];
+Ny_list = [8 16 32 64];
     
 for ii=1:length(Nx_list)  
   pram.Nx = Nx_list(ii);
@@ -19,8 +19,10 @@ for ii=1:length(Nx_list)
   [E Y_exp X_refs pram] = f_get_extPettern(pram);
 
   %% simulate sPSF, exPSF, and emPSF
-  % PSFs    = f_simPSFs(pram);
-  load('../FwdModel_matlab/_PSFs/PSFs27-Dec-2020 04_21_23.mat')        % on Macbook
+  of = cd('../FwdModel_matlab/');
+  PSFs    = f_simPSFs(pram);
+  cd(of)
+  %load('../FwdModel_matlab/_PSFs/PSFs27-Dec-2020 04_21_23.mat')        % on Macbook
 
   %% simulate data  
   % N_beads = 2 * round(500 * (pram.Nx*pram.Ny*pram.Nz*pram.dx^2*pram.dz)/(256*256*64*0.33^2*1));
