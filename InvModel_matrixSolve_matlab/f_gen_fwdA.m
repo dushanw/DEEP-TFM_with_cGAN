@@ -27,7 +27,7 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
     X_temp(:)=0;
     X_temp(i)=1;        
 
-    for t=1:pram.Nt
+    parfor t=1:pram.Nt
       Y_temp    (:,:,t) = conv2(E(:,:,t).*X_temp,emConvSPSF,'same');
       Y_temp_spx(:,:,t) = conv2(E(:,:,t).*X_temp,emConvSPSF);
     end
