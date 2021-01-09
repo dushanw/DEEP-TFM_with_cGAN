@@ -21,6 +21,10 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
   E           = E(1:end-1,1:end-1,:);
 
   X_temp = zeros(pram.Ny,pram.Nx);
+  
+  A_deep = zeros(pram.Ny*pram.Nx*pram.Nt, pram.Ny*pram.Nx);
+  A_spx  = zeros(pram.Nt,                 pram.Ny*pram.Nx);
+  A_ps   = zeros(pram.Ny*pram.Nx,         pram.Ny*pram.Nx);
   for i=1:pram.Ny*pram.Nx 
     fprintf('%d/%d\n',i,pram.Ny*pram.Nx )
     
@@ -31,7 +35,7 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
       Y_temp    (:,:,t) = conv2(E(:,:,t).*X_temp,emConvSPSF,'same');
       Y_temp_spx(:,:,t) = conv2(E(:,:,t).*X_temp,emConvSPSF);
     end
-    A_deep(:,i)     = Y_temp(:);
+    A_deep(:,i)= Y_temp(:);
     A_spx(:,i) = sum(sum(Y_temp_spx,1),2);
 
     Y_temp_ps  = conv2(X_temp,exPSF,'same');
