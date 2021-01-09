@@ -1,4 +1,4 @@
-function [A A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
+function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
 
   emConvSPSF  = imresize(PSFs.emConvSPSF,PSFs.pram.dx/pram.dx,'bilinear')*(pram.dx/PSFs.pram.dx)^2;
   emPSF       = imresize(PSFs.emPSF     ,PSFs.pram.dx/pram.dx,'bilinear')*(pram.dx/PSFs.pram.dx)^2;
@@ -31,11 +31,17 @@ function [A A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
       Y_temp    (:,:,t) = conv2(E(:,:,t).*X_temp,emConvSPSF,'same');
       Y_temp_spx(:,:,t) = conv2(E(:,:,t).*X_temp,emConvSPSF);
     end
-    A(:,i)     = Y_temp(:);
+    A_deep(:,i)     = Y_temp(:);
     A_spx(:,i) = sum(sum(Y_temp_spx,1),2);
 
     Y_temp_ps  = conv2(X_temp,exPSF,'same');
     A_ps(:,i)  = Y_temp_ps(:);
+  end
+    
+  if pram.useGPU ==1
+    A_deep  = gather(A_deep);
+    A_spx   = gather(A_spx);
+    A_ps    = gather(A_ps);    
   end
 
 end

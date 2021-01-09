@@ -41,10 +41,10 @@ for ii=1:length(Nx_list)
   X0      = X0/max(X0(:));
 
   %% Sensing matrices 
-  [A A_spx A_ps]= f_gen_fwdA(E,PSFs,pram);
-  At            = inv(A'*A)*A';
-  At_spx        = inv(A_spx);
-  At_ps         = inv(A_ps);
+  [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram);
+  At                  = inv(A_deep'*A_deep)*A_deep';
+  At_spx              = inv(A_spx);
+  At_ps               = inv(A_ps);
 
   %% run simulation
   clear Xhat_ps Xhat_deep Xhat_spx X_gt
@@ -55,7 +55,7 @@ for ii=1:length(Nx_list)
       [i j]
     %  Xhat_ps  (:,:,i) = reshape(At_ps *poissrnd(A_ps *X(:)),[pram.Ny pram.Nx]);    
       Xhat_ps  (:,:,j,i) = reshape(       poissrnd(A_ps *X(:)),[pram.Ny pram.Nx]);  
-      Xhat_deep(:,:,j,i) = reshape(At    *poissrnd(A    *X(:)),[pram.Ny pram.Nx]);
+      Xhat_deep(:,:,j,i) = reshape(At    *poissrnd(A_deep    *X(:)),[pram.Ny pram.Nx]);
       Xhat_spx (:,:,j,i) = reshape(At_spx*poissrnd(A_spx*X(:)),[pram.Ny pram.Nx]);  
     end
     X_gt(:,:,1,i) = X;
