@@ -3,9 +3,10 @@ function [E Y_exp X_refs pram] = f_get_extPettern(pram)
 
   switch pram.pattern_typ
     case 'dmd_sim_rnd'
-      E     = rand([pram.Ny pram.Nx pram.Nt]); % for DMDs
+      E     = single(rand([pram.Ny pram.Nx pram.Nt])>0.5); % for DMDs
       Y_exp = [];
-
+      X_refs= [];
+      pram  = pram;
     case 'dmd_exp_tfm_beads_7sls_20201219'
       load('./_extPatternsets/dmd_exp_tfm_beads_7sls_20201219.mat')
       
