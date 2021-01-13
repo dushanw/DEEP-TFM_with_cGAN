@@ -37,7 +37,7 @@ function pram = f_pram_init_invMatSolv()
   pram.lambda_ex  = 0.800;                              % [um]      excitation wavelength
   pram.lambda_em  = 0.590;                              % [um]      emission wavelength {0.606 }
   pram.NA         = 1;                                  % [AU]      numerical aperture of the objective
-  pram.z0_um      = -7*pram.sl;                         % [um]      depth (z=0 is the surface and -ve is below)
+  pram.z0_um      = -6*pram.sl;                         % [um]      depth (z=0 is the surface and -ve is below)
     
   %% camera parameters <THIS IS OLD NEED UPDATING WITH THE NEW CAM MODEL>
   pram.binR    = 1;
