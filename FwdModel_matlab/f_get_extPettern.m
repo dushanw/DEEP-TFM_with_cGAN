@@ -7,6 +7,15 @@ function [E Y_exp X_refs pram] = f_get_extPettern(pram)
       Y_exp = [];
       X_refs= [];
       pram  = pram;
+    case 'dmd_sim_Hadamard'
+      H     = hadamard(pram.Ny*pram.Nx);
+      A     = (H+1)/2;
+      E     = single(reshape(A,pram.Ny,pram.Nx,[])); % for DMDs
+      E     = E(:,:,1:pram.Nt);
+      
+      Y_exp = [];
+      X_refs= [];
+      pram  = pram;
     case 'dmd_exp_tfm_beads_7sls_20201219'
       load('./_extPatternsets/dmd_exp_tfm_beads_7sls_20201219.mat')
       
@@ -51,4 +60,19 @@ function [E Y_exp X_refs pram] = f_get_extPettern(pram)
 end
 
 
+function H = subf_get_hadamard_patterns(Ny,Nx,Nt)
+
+  ny      = sqrt(Nt/cos(pi/6));                     % from tesselation nx = ny*cos(pi/6) and Area = Nt = nx*ny  
+  ny      = round(ny);
+  nx      = floor(Nt/ny);
+
+  hadmat  = hadamard(Nt);
+% hadmat(:,1)  = [1:Nt]';                           % to check the that the tesselation is right
+  
+  h       = reshape(hadmat(1:nx*ny,:),[ny nx Nt]);  % one block
+  h2      = [h circshift(h,round(size(h,1)/2),1)];  % two blocks for triangulization
+
+  H       = repmat(h2,[ceil(Ny/ny) ceil(Nx/(2*nx)) 1]);
+  H       = H(1:Ny,1:Nx,:);
+end
 

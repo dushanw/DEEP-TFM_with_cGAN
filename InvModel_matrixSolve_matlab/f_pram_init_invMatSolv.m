@@ -6,7 +6,8 @@ function pram = f_pram_init_invMatSolv()
 
   %% names
   pram.mic_typ      = 'DMD';                            % {'DMD','WGD'}
-  pram.pattern_typ  = 'dmd_sim_rnd';                    % {'dmd_sim_rnd',
+  pram.pattern_typ  = 'dmd_sim_Hadamard';               % {'dmd_sim_rnd',
+                                                        %  'dmd_sim_Hadamard',
                                                         %  'dmd_exp_tfm_beads_7sls_20201219'   
                                                         % }
   pram.dataset      = 'beads';                          % {'minist',
