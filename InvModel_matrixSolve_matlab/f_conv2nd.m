@@ -17,11 +17,13 @@ function C = f_conv2nd(A,B,shape)
   C = ifft2(fft2(A,fft_Ny,fft_Nx) .* fft2(B,fft_Ny,fft_Nx));
   C = abs(C);
 
-  switch shape
-    case 'same'
-      y_range = round(fft_Ny/2 - size(A,1)/2)+1:round(fft_Ny/2 + size(A,1)/2);            
-      x_range = round(fft_Nx/2 - size(A,2)/2)+1:round(fft_Nx/2 + size(A,2)/2);
-      C = C(y_range,x_range,:);
+  if ~isempty(shape)
+    switch shape
+      case 'same'
+        y_range = round(fft_Ny/2 - size(A,1)/2)+1:round(fft_Ny/2 + size(A,1)/2);            
+        x_range = round(fft_Nx/2 - size(A,2)/2)+1:round(fft_Nx/2 + size(A,2)/2);
+        C = C(y_range,x_range,:);
+    end
   end
 
 end

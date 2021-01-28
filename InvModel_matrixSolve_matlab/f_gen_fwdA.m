@@ -14,16 +14,22 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
     emPSF       = gpuArray(emPSF); 
     exPSF       = gpuArray(exPSF);
     X_temp      = gpuArray(zeros(pram.Ny,pram.Nx));
-    A_deep      = gpuArray(zeros(pram.Ny*pram.Nx*pram.Nt, pram.Ny*pram.Nx));
-    A_spx       = gpuArray(zeros(pram.Nt,                 pram.Ny*pram.Nx));
-    A_ps        = gpuArray(zeros(pram.Ny*pram.Nx,         pram.Ny*pram.Nx));  
+%     A_deep      = gpuArray(zeros(pram.Ny*pram.Nx*pram.Nt, pram.Ny*pram.Nx));
+%     A_spx       = gpuArray(zeros(pram.Nt,                 pram.Ny*pram.Nx));
+%     A_ps        = gpuArray(zeros(pram.Ny*pram.Nx,         pram.Ny*pram.Nx));  
   else
     X_temp      = zeros(pram.Ny,pram.Nx);
-    A_deep      = zeros(pram.Ny*pram.Nx*pram.Nt, pram.Ny*pram.Nx);
-    A_spx       = zeros(pram.Nt,                 pram.Ny*pram.Nx);
-    A_ps        = zeros(pram.Ny*pram.Nx,         pram.Ny*pram.Nx);  
+%     A_deep      = zeros(pram.Ny*pram.Nx*pram.Nt, pram.Ny*pram.Nx);
+%     A_spx       = zeros(pram.Nt,                 pram.Ny*pram.Nx);
+%     A_ps        = zeros(pram.Ny*pram.Nx,         pram.Ny*pram.Nx);  
   end
-    
+
+  A_deep      = zeros(pram.Ny*pram.Nx*pram.Nt, pram.Ny*pram.Nx);
+  A_spx       = zeros(pram.Nt,                 pram.Ny*pram.Nx);
+  A_ps        = zeros(pram.Ny*pram.Nx,         pram.Ny*pram.Nx);  
+
+  
+  
   E             = padarray(E,[1 1],0,'pre');
   for t=1:pram.Nt     
     E(:,:,t)    = conv2(E(:,:,t),exPSF,'same');  
@@ -39,8 +45,8 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
     X_temp(i)=1;        
 
     if pram.useGPU ==1      
-      Y_temp    (:,:,t) = f_conv2nd(E.*X_temp,emConvSPSF,'same');
-      Y_temp_spx(:,:,t) = f_conv2nd(E.*X_temp,emConvSPSF);
+      Y_temp     = f_conv2nd(E.*X_temp,emConvSPSF,'same');
+      Y_temp_spx = f_conv2nd(E.*X_temp,emConvSPSF);
       
       A_deep(:,i)= gather(Y_temp(:));
       A_spx(:,i) = gather(sum(sum(Y_temp_spx,1),2));
