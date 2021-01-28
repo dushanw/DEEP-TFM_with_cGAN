@@ -40,7 +40,7 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
   tic
   fprintf('%5d/%5d\n',0,pram.Ny*pram.Nx)
   for i=1:pram.Ny*pram.Nx 
-    fprintf('\b\b\b\b\b\b\b\b\b\b\b\b%5d/%5d\n',i,pram.Ny*pram.Nx)
+    fprintf('\b\b\b\b\b\b\b\b\b\b\b\b%5d/%5d',i,pram.Ny*pram.Nx)
     
     X_temp(:)=0;
     X_temp(i)=1;        
@@ -64,7 +64,8 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
       A_ps(:,i)  = Y_temp_ps(:);
     end    
   end
-  toc  
+  fprintf('\n')
+  toc
   
   if pram.useGPU ==1
     A_deep  = gather(A_deep);
