@@ -33,20 +33,19 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
   
   tic
   for i=1:pram.Ny*pram.Nx 
-    fprintf('%d/%d\n',i,pram.Ny*pram.Nx )
+    fprintf('%d/%d\n',i,pram.Ny*pram.Nx)
     
     X_temp(:)=0;
     X_temp(i)=1;        
 
-    if pram.useGPU ==1
-      for t=1:pram.Nt
-        Y_temp    (:,:,t) = conv2(E(:,:,t).*X_temp,emConvSPSF,'same');
-        Y_temp_spx(:,:,t) = conv2(E(:,:,t).*X_temp,emConvSPSF);
-      end
-      A_deep(:,i)= (Y_temp(:));
-      A_spx(:,i) = (sum(sum(Y_temp_spx,1),2));
-      Y_temp_ps  = conv2(X_temp,exPSF,'same');
-      A_ps(:,i)  = (Y_temp_ps(:));
+    if pram.useGPU ==1      
+      Y_temp    (:,:,t) = f_conv2nd(E.*X_temp,emConvSPSF,'same');
+      Y_temp_spx(:,:,t) = f_conv2nd(E.*X_temp,emConvSPSF);
+      
+      A_deep(:,i)= gather(Y_temp(:));
+      A_spx(:,i) = gather(sum(sum(Y_temp_spx,1),2));
+      Y_temp_ps  = gather(conv2(X_temp,exPSF,'same'));
+      A_ps(:,i)  = gather(Y_temp_ps(:));
     else
       parfor t=1:pram.Nt
         Y_temp    (:,:,t) = conv2(E(:,:,t).*X_temp,emConvSPSF,'same');
