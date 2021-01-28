@@ -46,7 +46,7 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
 
     if pram.useGPU ==1      
       Y_temp     = f_conv2nd(E.*X_temp,emConvSPSF,'same');
-      Y_temp_spx = f_conv2nd(E.*X_temp,emConvSPSF);
+      Y_temp_spx = f_conv2nd(E.*X_temp,emConvSPSF,[]);
       
       A_deep(:,i)= gather(Y_temp(:));
       A_spx(:,i) = gather(sum(sum(Y_temp_spx,1),2));
