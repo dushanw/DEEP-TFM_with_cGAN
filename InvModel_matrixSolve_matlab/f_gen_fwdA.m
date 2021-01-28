@@ -38,7 +38,7 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
 
   
   tic
-  fprintf('%5d/%5d\n',0,pram.Ny*pram.Nx)
+  fprintf('%5d/%5d',0,pram.Ny*pram.Nx)
   for i=1:pram.Ny*pram.Nx 
     fprintf('\b\b\b\b\b\b\b\b\b\b\b\b%5d/%5d',i,pram.Ny*pram.Nx)
     
