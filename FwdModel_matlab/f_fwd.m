@@ -10,13 +10,17 @@ function [Yhat Xgt] = f_fwd(X0,E,PSFs,pram)
     emConvSPSF  = gpuArray(emConvSPSF);
     emPSF       = gpuArray(emPSF);  
   end
-
-  for j=1:size(X0,4)
-    for i=1:pram.Nt
-      Y0(:,:,i,j) = conv2(E(:,:,i).*X0(:,:,1,j),emConvSPSF,'same');    
-    end
-    Xgt(:,:,1,j)  =  conv2(X0(:,:,1,j),emPSF,'same');    
-  end
+    
+  
+  Y0  = f_conv2nd(E.*X0,emConvSPSF,'same');    
+  Xgt = f_conv2nd(X0,emPSF,'same');    
+  
+%   for j=1:size(X0,4)
+%     for i=1:pram.Nt
+%       Y0(:,:,i,j) = conv2(E(:,:,i).*X0(:,:,1,j),emConvSPSF,'same');          
+%     end
+%     Xgt(:,:,1,j)  =  conv2(X0(:,:,1,j),emPSF,'same');    
+%   end
 
   Y0  = double(5*pram.maxcount*Y0/max(Y0(:))); 
   Xgt = 5*Xgt./max(Xgt(:));
