@@ -4,7 +4,10 @@
 clc;clear all;close all
 addpath('./_extPatternsets/')
 
-pram                  = f_pram_init();
+pram    = f_pram_init();
+pram.Nt = 32;
+
+
 [E Y_exp X_refs pram] = f_get_extPettern(pram);
 
 %% simulate sPSF, exPSF, and emPSF
@@ -13,11 +16,12 @@ PSFs = f_simPSFs(pram);
 % load('./_PSFs/PSFs04-Jan-2021 02:13:34.mat')        % on GPU
 
 %% simulate training data  
-Nmb   = 512;                                          % minibatch size is selected based on f_fwd's run time... 
+Nmb   = 32;                                          % minibatch size is selected based on f_fwd's run time... 
                                                       % ~500 works ok on GPU.
 tic
 t = 1;
 for j = 1:ceil(pram.Nb/Nmb) 
+  j
   N_beads     = pram.Nz * 500/64;
   X0 = [];
   for i=1:round(Nmb/pram.Nz)
