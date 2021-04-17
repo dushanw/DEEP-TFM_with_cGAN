@@ -45,7 +45,7 @@ function PSFs = f_simPSFs3D(pram)
   emPSF       = emPSF(:,:,z_range);
   
   delete(gcp('nocreate'));
-  cd(of);
+  cd(of2);
 
   %% simulate sPSF (saves to [mclm_pram.savepath mclm_pram.fNameStem '_sPSF.mat'])
   z_range_um  = ( -floor(size(emPSF,3)/2):floor(size(emPSF,3)/2) ) .* mcls_pram.dx + mcls_pram.z0_um;
