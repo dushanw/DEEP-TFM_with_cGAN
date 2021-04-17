@@ -20,7 +20,7 @@ function PSFs = f_simPSFs3D(pram)
   mcls_pram.useGpu    = 1;
    
   %% simulate exPSF and emPSF
-  cd('_supToolboxes/optical_PSF/');
+  of2 = cd('_supToolboxes/optical_PSF/');
   delete(gcp('nocreate'));
   parpool(4) % so that the gpu don't go out of memory 
   
@@ -58,7 +58,8 @@ function PSFs = f_simPSFs3D(pram)
     load([mcls_pram.savepath mcls_pram.fNameStem '_sPSF.mat']);       % loads sPSF
     sPSF_3d(:,:,length(z_range_um)-i+1) = sPSF(2:end-1,2:end-1);
   end
-    
+  cd(of);  
+  
   %% convolve emPSF and sPSF 
   %emConvSPSF  = gather(conv2(gpuArray(sPSF),gpuArray(emPSF),'same'));
     
