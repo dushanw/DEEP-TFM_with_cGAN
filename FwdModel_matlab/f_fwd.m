@@ -10,10 +10,9 @@ function [Yhat Xgt] = f_fwd(X0,E,PSFs,pram)
     emConvSPSF  = gpuArray(emConvSPSF);
     emPSF       = gpuArray(emPSF);  
   end
-    
-  
-  Y0  = f_conv2nd(E.*X0,emConvSPSF,'same');    
-  Xgt = f_conv2nd(X0,emPSF,'same');    
+      
+  Y0  = f_conv2nd(E.*X0,emConvSPSF,'same');
+  Xgt = f_conv2nd(X0,emPSF,'same');
   
 %   for j=1:size(X0,4)
 %     for i=1:pram.Nt

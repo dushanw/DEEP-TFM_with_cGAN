@@ -28,7 +28,7 @@ function PSFs = f_simPSFs(pram)
   cd('_supToolboxes/optical_PSF/');
   APSF_3D     = Efficient_PSF(mcls_pram.NA, mcls_pram.nm, mcls_pram.lambda_ex, mcls_pram.dx,mcls_pram.Nx-2,mcls_pram.Nx-2,2,200);
   PSF_3D      = abs(APSF_3D{1}).^2+abs(APSF_3D{2}).^2+abs(APSF_3D{3}).^2;
-  exPSF       = PSF_3D(:,:,2);
+  exPSF       = PSF_3D(:,:,2).^2; % 2021-04-13 check with Peter if this dependence is correct. 
   exPSF       = exPSF/sum(exPSF(:));
   
   APSF_3D     = Efficient_PSF(mcls_pram.NA, mcls_pram.nm, mcls_pram.lambda_em, mcls_pram.dx,mcls_pram.Nx-2,mcls_pram.Nx-2,2,200);

@@ -1,4 +1,4 @@
-function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
+function [A_deep A_deep_approx A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
 
   emConvSPSF  = imresize(PSFs.emConvSPSF,PSFs.pram.dx/pram.dx,'bilinear')*(pram.dx/PSFs.pram.dx)^2;
   emPSF       = imresize(PSFs.emPSF     ,PSFs.pram.dx/pram.dx,'bilinear')*(pram.dx/PSFs.pram.dx)^2;
@@ -36,7 +36,13 @@ function [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram)
   end
   E             = E(1:end-1,1:end-1,:);
 
-  
+  % make A_deep_approx
+  i_vec         = [1:pram.Ny*pram.Nx*pram.Nt]';
+  j_vec         = repmat(1:pram.Ny*pram.Nx,[1 pram.Nt])';
+  E_approx      = E - mean(E,3);
+  s_vec         = double(E_approx(:));
+  A_deep_approx = sparse(i_vec,j_vec,s_vec,pram.Ny*pram.Nx*pram.Nt,pram.Ny*pram.Nx);
+
   
   fprintf('%5d/%5d',0,pram.Ny*pram.Nx)
   for i=1:pram.Ny*pram.Nx 

@@ -1,7 +1,7 @@
 % 20181107 by Dushan N. Wadduwage
 % 20201223 edited by DNW to improve speed using GPU and fmin
 
-function [Xhat FitInfo] = f_rec_inv_wlPrior_lasso(pram,y,A,wname,lasso_lambda)
+function [Xhat FitInfo] = f_rec_inv_wlPrior_lasso(pram,y,A,wname,lasso_lambda,X0)
 
   tic
   disp(['Preprocessing inputs | t = ' num2str(toc) '[s]'])
@@ -41,6 +41,14 @@ function [Xhat FitInfo] = f_rec_inv_wlPrior_lasso(pram,y,A,wname,lasso_lambda)
   x(x<0)= 0;
   
   Xhat = reshape(x,pram.Ny,pram.Nx,size(x,2)); 
+  
+%   % select the best image using ssim  
+%   for i=1:size(Xhat,3)
+%     ssimval(i) = ssim(Xhat(:,:,i),X0);
+%   end
+%   [xx ind_best] = max(ssimval);
+%   Xhat = Xhat(:,:,ind_best);
+%   
 end
 
 

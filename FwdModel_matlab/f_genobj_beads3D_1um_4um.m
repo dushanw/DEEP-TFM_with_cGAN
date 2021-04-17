@@ -1,13 +1,13 @@
 
 function X0 = f_genobj_beads3D_1um_4um(N_beads,pram)
   
-  r_range     = [0.5/pram.dx 2/pram.dx];                          % bead radii
+  r_range     = [0.5/pram.dx 2/pram.dx];                            % bead radii
   Ny0         = pram.Ny;
   Nx0         = pram.Nx;
-  Nz0         = round(pram.Nz*pram.dz/pram.dx);                   % for isotropic resolution on the object
+  Nz0         = round(pram.Nz*pram.dz/pram.dx);                     % for isotropic resolution on the object
     
   if isempty(N_beads)
-    N_beads   = round((Ny0*Nx0*Nz0/max(r_range)^3)/100);             % 1/100 of grid maximum packing
+    N_beads   = round((Ny0*Nx0*Nz0/max(r_range)^3)/100);            % 1/100 of grid maximum packing
   end
     
   centroids   = [randi([ceil(max(r_range)), Ny0-ceil(max(r_range))],N_beads,1),...

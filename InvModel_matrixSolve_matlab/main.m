@@ -3,7 +3,7 @@
 
 % 20210107 : used to compare PS, SPx, and DEEP
 
-clc;clear all;close all
+clc; clear all; close all
 addpath('../FwdModel_matlab/')
 addpath('../FwdModel_matlab/_extPatternsets/')
 
@@ -14,6 +14,7 @@ Ny_list = [8 16 32 64];
 for ii=1:length(Nx_list)  
   pram.Nx = Nx_list(ii);
   pram.Ny = Ny_list(ii);
+  %pram.Nt = pram.Nx * pram.Ny;
   pram.Nt = pram.Nx * pram.Ny;
   
   [E Y_exp X_refs pram] = f_get_extPettern(pram);
@@ -37,36 +38,95 @@ for ii=1:length(Nx_list)
   % MINST
   load('../FwdModel_matlab/_datasets/mnist.mat')
   X0      = imresize(XTest(:,:,1,3),[pram.Ny pram.Nx]);
-  X0      = X0 - min(X0(:));
+  X0      = X0 + 1;
+  X0(X0<0)= 0;
   X0      = X0/max(X0(:));
 
-  %% Sensing matrices 
+  %% Sensing matrices   
   [A_deep A_spx A_ps] = f_gen_fwdA(E,PSFs,pram);
-  At                  = inv(A_deep'*A_deep)*A_deep';
+  At_deep             = inv(A_deep'*A_deep)*A_deep';
   At_spx              = inv(A_spx);
   At_ps               = inv(A_ps);
 
   %% run simulation
+  tic
   clear Xhat_ps Xhat_deep Xhat_spx X_gt
-  for i = 1:5
-    X             = X0*10^(i-1);
-    % sumnerical simulation
-    for j=1:100
-      [i j]
-    %  Xhat_ps  (:,:,i) = reshape(At_ps *poissrnd(A_ps *X(:)),[pram.Ny pram.Nx]);    
-      Xhat_ps  (:,:,j,i) = reshape(       poissrnd(A_ps *X(:)),[pram.Ny pram.Nx]);  
-      Xhat_deep(:,:,j,i) = reshape(At    *poissrnd(A_deep    *X(:)),[pram.Ny pram.Nx]);
-      Xhat_spx (:,:,j,i) = reshape(At_spx*poissrnd(A_spx*X(:)),[pram.Ny pram.Nx]);  
-    end
-    X_gt(:,:,1,i) = X;
+  N_reps    = 1000;  
+  for i = 1:7
+    i    
+    X         = X0*10^(i-1);        
+    if(pram.useGPU==1)
+      for j=1:N_reps/100
+%        Xhat_deep(:,:,(j-1)*100+1:j*100,i) = gather(reshape(At_deep * poissrnd(gpuArray(repmat(A_deep*X(:),[1 100]))),pram.Ny, pram.Nx,1,[]));
+        Xhat_spx(:,:,(j-1)*100+1:j*100,i)  = gather(reshape(A_spx   \ poissrnd(gpuArray(repmat(A_spx *X(:),[1 100]))),pram.Ny, pram.Nx,1,[]));
+        Xhat_ps(:,:,(j-1)*100+1:j*100,i)   = gather(reshape(          poissrnd(gpuArray(repmat(A_ps  *X(:),[1 100]))),pram.Ny, pram.Nx,1,[]));
+      end
+    else      
+      Xhat_deep(:,:,:,i) = reshape(At_deep * poissrnd(repmat(A_deep*X(:),[1 N_reps])),pram.Ny, pram.Nx,[]);
+      Xhat_spx(:,:,:,i)  = reshape(A_spx   \ poissrnd(repmat(A_spx *X(:),[1 N_reps])),pram.Ny, pram.Nx,[]);
+      Xhat_ps(:,:,:,i)   = reshape(          poissrnd(repmat(A_ps  *X(:),[1 N_reps])),pram.Ny, pram.Nx,[]);    
+    end    
+    X_gt(:,:,1,i)      = X;
   end
-  save(sprintf('sim_sls-%d_NyNx-%dx%d.mat',-PSFs.pram.z0_um/PSFs.pram.sl,...
+  toc
+  save(sprintf('sim_sls-%d_NyNx-%dx%d_Nt-%d.mat',-PSFs.pram.z0_um/PSFs.pram.sl,...
                                            pram.Ny,...
-                                           pram.Nx),...
+                                           pram.Nx,...
+                                           pram.Nt),...
        'Xhat_ps','Xhat_deep','Xhat_spx','X_gt','pram','PSFs');   
+     
+  xx = 1   
+  xx = 2   
 end
 
    
+%% analyse on saved mats
+clear snr_deep snr_spx snr_ps
+
+snr_deep = [];
+snr_spx  = [];
+snr_ps   = [];
+
+delta = 0;
+for ii=1:3
+  pram.Nx = Nx_list(ii);
+  pram.Ny = Ny_list(ii);
+  load(sprintf('sim_sls-%d_NyNx-%dx%d.mat',7,pram.Ny,pram.Nx))
+  sigma_Xhat_ps   = std(Xhat_ps  ,0,3) + delta;
+  sigma_Xhat_deep = std(Xhat_deep,0,3) + delta;
+  sigma_Xhat_spx  = std(Xhat_spx ,0,3) + delta;
+
+  snr_deep  = cat(1,snr_deep,imresize(X_gt./sigma_Xhat_deep,[32 32],'nearest'));
+  snr_spx   = cat(1,snr_spx ,imresize(X_gt./sigma_Xhat_spx,[32 32],'nearest'));
+  snr_ps    = cat(1,snr_ps  ,imresize(X_gt./sigma_Xhat_ps,[32 32],'nearest'));
+    
+%   inds = (sigma_Xhat_ps>0) & (sigma_Xhat_deep>0) & (sigma_Xhat_spx>0);
+%   for i=1:5
+%     snr_deep(i,ii)  = mean(X_gt(inds(:,:,1,i))./sigma_Xhat_deep(inds(:,:,1,i)));
+%     snr_spx(i,ii)   = mean(X_gt(inds(:,:,1,i))./sigma_Xhat_spx(inds(:,:,1,i)));
+%     snr_ps(i,ii)    = mean(X_gt(inds(:,:,1,i))./sigma_Xhat_ps(inds(:,:,1,i)));
+%   end
+  
+%   snr_deep(:,ii)  = squeeze(mean(mean(X_gt./sigma_Xhat_deep,1),2));
+%   snr_spx(:,ii)   = squeeze(mean(mean(X_gt./sigma_Xhat_spx,1),2));
+%   snr_ps(:,ii)    = squeeze(mean(mean(X_gt./sigma_Xhat_ps,1),2));
+end
+
+semilogy(snr_deep,'-.');hold on
+semilogy(snr_spx,'--');hold on
+semilogy(snr_ps);hold on
+
+
+subplot(3,1,1);imagesc(imtile(snr_deep,'GridSize',[1 5]));axis image;colorbar
+subplot(3,1,2);imagesc(imtile(snr_spx ,'GridSize',[1 5]));axis image;colorbar
+subplot(3,1,3);imagesc(imtile(snr_ps  ,'GridSize',[1 5]));axis image;colorbar
+
+imagesc(cat(1,imtile(snr_deep,'GridSize',[1 5]),...
+              imtile(snr_spx ,'GridSize',[1 5]),...
+              imtile(snr_ps  ,'GridSize',[1 5])));axis image;colorbar
+set(gca,'ColorScale','log')
+
+
 %% temp analysis code   
    
 % figure;

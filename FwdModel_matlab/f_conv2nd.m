@@ -19,7 +19,7 @@ function C = f_conv2nd(A,B,shape)
   if ~isempty(shape)
     switch shape
       case 'same'
-        y_range = round(fft_Ny/2 - size(A,1)/2)+1:round(fft_Ny/2 + size(A,1)/2);            
+        y_range = round(fft_Ny/2 - size(A,1)/2)+1:round(fft_Ny/2 + size(A,1)/2);
         x_range = round(fft_Nx/2 - size(A,2)/2)+1:round(fft_Nx/2 + size(A,2)/2);
         C = C(y_range,x_range,:,:);
     end
