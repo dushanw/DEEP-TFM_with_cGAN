@@ -16,7 +16,7 @@ function PSFs = f_simPSFs3D(pram)
   mcls_pram.lambda_em = pram.lambda_em;
   mcls_pram.NA        = pram.NA;
   mcls_pram.Nphotons  = 1E6;
-  mcls_pram.Nsims     = 32;
+  mcls_pram.Nsims     = 2;
   mcls_pram.useGpu    = 1;
    
   %% simulate exPSF and emPSF
