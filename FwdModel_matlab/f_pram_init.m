@@ -38,11 +38,7 @@ function pram = f_pram_init()
   pram.lambda_em  = 0.590;                              % [um]      emission wavelength {0.606 }
   pram.NA         = 1;                                  % [AU]      numerical aperture of the objective
   pram.z0_um      = -7*pram.sl;                         % [um]      depth (z=0 is the surface and -ve is below)
-  
-  % temp 2021-04-17
-  pram.z0_um      = -7*pram.sl;                         % [um]      depth (z=0 is the surface and -ve is below)
-  % end temp  
-  
+    
   %% camera parameters <THIS IS OLD NEED UPDATING WITH THE NEW CAM MODEL>
   pram.binR    = 1;
   pram.cam_emhist_Nreps = 10000;
