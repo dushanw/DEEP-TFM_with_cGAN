@@ -13,10 +13,10 @@ function C = f_conv3nd(A,B,shape)
   fft_Nx      = size(A,2)+size(B,2)-1;
   fft_Nz      = size(A,3)+size(B,3)-1;
   
-  for i=1:size(A,5)
-    for j=1:size(A,4)
+  for i=1:size(B,5)
+    for j=1:size(B,4)
       [i j]
-      C(:,:,:,j,i) = ifftn(fftn(A(:,:,:,j,i),[fft_Ny,fft_Nx,fft_Nz]) .* fftn(B(:,:,:,j,i),[fft_Ny,fft_Nx,fft_Nz]));
+      C(:,:,:,j,i) = ifftn(fftn(A,[fft_Ny,fft_Nx,fft_Nz]) .* fftn(B(:,:,:,j,i),[fft_Ny,fft_Nx,fft_Nz]));
     end
   end
   C = abs(C);
