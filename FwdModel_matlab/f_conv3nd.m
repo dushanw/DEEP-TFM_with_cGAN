@@ -15,6 +15,7 @@ function C = f_conv3nd(A,B,shape)
   
   for i=1:size(A,5)
     for j=1:size(A,4)
+      [i j]
       C(:,:,:,j,i) = ifftn(fftn(A(:,:,:,j,i),[fft_Ny,fft_Nx,fft_Nz]) .* fftn(B,[fft_Ny,fft_Nx,fft_Nz]));
     end
   end
