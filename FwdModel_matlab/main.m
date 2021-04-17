@@ -90,9 +90,9 @@ f_writeDataset_hdf5(fileNameStem,DataIn_real_beads2,DataGt_real_beads2);
     N_beads     = round(pram.Nz * 100/64);% new on 2021-04-16
     t = 1;
     clear X0
-    for j = 1:ceil(pram.Nb/pram.Nz) 
+    for j = 1:ceil(pram.Nb/pram.Nz)
       j
-      X0_temp               = f_genobj_beads3D_1um_4um(N_beads,pram);  
+      X0_temp               = f_genobj_beads3D_1um_4um(N_beads,pram);
       Nmb_t                 = size(X0_temp,3);
       X0(:,:,1,t:t+Nmb_t-1) = gather(X0_temp); 
       t = t+Nmb_t;
