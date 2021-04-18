@@ -13,7 +13,11 @@ function C = f_conv2nd(A,B,shape)
   fft_Ny      = size(A,1)+size(B,1)-1;
   fft_Nx      = size(A,2)+size(B,2)-1;
   
-  C = ifft2(fft2(A,fft_Ny,fft_Nx) .* fft2(B,fft_Ny,fft_Nx));
+  for i=1:size(B,5)
+    for j=1:size(B,4)
+      C(:,:,:,j,i) = ifft2(fft2(A,fft_Ny,fft_Nx) .* fft2(B(:,:,:,j,i),fft_Ny,fft_Nx));
+    end
+  end      
   C = abs(C);
 
   if ~isempty(shape)
