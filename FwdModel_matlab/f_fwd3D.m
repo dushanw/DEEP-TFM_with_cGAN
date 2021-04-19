@@ -49,7 +49,7 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   Nb        = length(vol_inits);
   for b = 1:Nb
     b
-    X0_vol  = gpuArray(X0(:,:,vol_inits(b):vol_inits(b)+vol_Nz-1));
+    X0_vol  = X0(:,:,vol_inits(b):vol_inits(b)+vol_Nz-1);
     X_ex    = Eex_3D .* X0_vol;
     
     for j=1:size(X_ex,4)                              % using the loop in the function is slow for some reason
@@ -61,7 +61,7 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
     end
     
     %% gt image (as in the absence of scattering)
-    Xgt_3d    = f_conv3nd(exPSF,X0,'same');
+    Xgt_3d    = f_conv3nd(exPSF,X0_vol,'same');
   
     %% postprocess (cropping)
     y_range   = round(size(X_em,1)/2 - pram.Nx/2)+1:round(size(X_em,1)/2 + pram.Nx/2);
