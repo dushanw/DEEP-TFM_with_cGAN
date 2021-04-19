@@ -48,7 +48,7 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   vol_inits = [1:5:size(X0,3)-vol_Nz];  
   Nb        = length(vol_inits);
   for b = 1:Nb
-    b
+    % b
     X0_vol  = X0(:,:,vol_inits(b):vol_inits(b)+vol_Nz-1);
     X_ex    = Eex_3D .* X0_vol;
     
