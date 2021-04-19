@@ -17,6 +17,13 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   %   Yhat        - [y,x,t=Nt,b]
   %   Xgt         - [y,x,t=1 ,b]
   
+  %% load emccd noise distributions for Yhat  
+  try
+    load('./_emhist/emhist_03-Jan-2021 07_55_31.mat') 
+  catch
+    load('./_emhist/emhist_03-Jan-2021 07:55:31.mat')
+  end
+  
   %% preprocess inputs (for size, resolution, and dimentionality, and gpu-use)
   %Nz_X0     = size(X0,3);
   exPSF     = single(imresize3(PSFs.exPSF,PSFs.pram.dx/pram.dx,'Antialiasing',true));
@@ -109,9 +116,11 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
     %% cont...
     Y0        = double(5*pram.maxcount*Y0/max(Y0(:))); 
     Xgt       = 5*Xgt./max(Xgt(:));
-
-    Y0_all (:,:,:,:,b) = Y0;
-    Xgt_all(:,:,:,:,b) = Xgt;
+  
+    [Yhat YhatADU]      = f_simulateIm_emCCD(Y0,emhist,pram);
+    
+    Yhat_all(:,:,:,:,b) = Yhat;
+    Xgt_all (:,:,:,:,b) = Xgt;
   end
   
   
@@ -127,8 +136,8 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   [Yhat YhatADU]= f_simulateIm_emCCD(Y0_all,emhist,pram);
   
   %% change dims for output
-  Xgt       = reshape(Xgt_all,[pram.Ny pram.Nx 1       Nb]); 
-  Yhat      = reshape(Yhat   ,[pram.Ny pram.Nx pram.Nt Nb]);
+  Xgt       = reshape(Xgt_all ,[pram.Ny pram.Nx 1       Nb]); 
+  Yhat      = reshape(Yhat_all,[pram.Ny pram.Nx pram.Nt Nb]);
 end
 
 
