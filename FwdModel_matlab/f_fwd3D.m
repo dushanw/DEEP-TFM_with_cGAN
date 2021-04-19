@@ -117,10 +117,11 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
     Y0        = double(5*pram.maxcount*Y0/max(Y0(:))); 
     Xgt       = 5*Xgt./max(Xgt(:));
   
-    [Yhat YhatADU]      = f_simulateIm_emCCD(Y0,emhist,pram);
+%   [Yhat YhatADU]      = f_simulateIm_emCCD(Y0,emhist,pram);
+%   Yhat_all(:,:,:,:,b) = Yhat;
     
-    Yhat_all(:,:,:,:,b) = Yhat;
-    Xgt_all (:,:,:,:,b) = Xgt;
+    Y0_all  (:,:,:,:,b) = Y0;
+    Xgt_all (:,:,:,:,b) = Xgt;    
   end
   
   
@@ -132,7 +133,7 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
 %   catch
 %     load('./_emhist/emhist_03-Jan-2021 07:55:31.mat')
 %   end
-%   [Yhat YhatADU]= f_simulateIm_emCCD(Y0_all,emhist,pram);
+  [Yhat_all YhatADU]= f_simulateIm_emCCD(Y0_all,emhist,pram);
   
   %% change dims for output
   Xgt       = reshape(Xgt_all ,[pram.Ny pram.Nx 1       Nb]); 
