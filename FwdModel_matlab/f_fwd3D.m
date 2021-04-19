@@ -32,7 +32,7 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   E         = reshape(E,[size(E,1),size(E,2),1,size(E,3)]);
   %X0        = reshape(X0,[size(X0,1),size(X0,2),size(X0,3),1,size(X0,4)]);
   if pram.useGPU ==1
-    % X0      = gpuArray(X0);
+    X0      = gpuArray(X0);
     E       = gpuArray(E);
     emPSF   = gpuArray(emPSF);
     exPSF   = gpuArray(exPSF);
