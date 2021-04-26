@@ -24,6 +24,7 @@ function PSFs = f_simPSFs3D(pram)
   delete(gcp('nocreate'));
   parpool(4) % so that the gpu don't go out of memory 
   
+    %% exPSF
   APSF_3D     = Efficient_PSF(mcls_pram.NA, mcls_pram.nm, mcls_pram.lambda_ex, mcls_pram.dx,mcls_pram.Nx-2,mcls_pram.Nx-2,100,100);
   PSF_3D      = abs(APSF_3D{1}).^2+abs(APSF_3D{2}).^2+abs(APSF_3D{3}).^2;
   PSF_3D_2p   = PSF_3D.^2; % 2021-04-13 check with Peter if this dependence is correct. 
@@ -36,8 +37,10 @@ function PSFs = f_simPSFs3D(pram)
   half_Nz     = mcls_pram.Nz/2+1 - min(find(axial_sum>0.01));
   z_range     = mcls_pram.Nz/2+1-half_Nz : mcls_pram.Nz/2+1+half_Nz;
   z_range_um  = (z_range-half_Nz+1) * mcls_pram.dx;
-  exPSF       = exPSF(:,:,z_range);
   
+  exPSF       = exPSF(:,:,z_range);
+    
+    %% emPSF
   APSF_3D     = Efficient_PSF(mcls_pram.NA, mcls_pram.nm, mcls_pram.lambda_em, mcls_pram.dx,mcls_pram.Nx-2,mcls_pram.Nx-2,100,100);
   PSF_3D      = abs(APSF_3D{1}).^2+abs(APSF_3D{2}).^2+abs(APSF_3D{3}).^2;
   sum_at_focus= max(sum(sum(PSF_3D,1),2));

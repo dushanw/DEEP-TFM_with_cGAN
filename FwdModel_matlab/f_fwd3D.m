@@ -16,21 +16,15 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   % Output dimentionality
   %   Yhat        - [y,x,t=Nt,b]
   %   Xgt         - [y,x,t=1 ,b]
-  
-  %% load emccd noise distributions for Yhat  
-  try
-    load('./_emhist/emhist_03-Jan-2021 07_55_31.mat') 
-  catch
-    load('./_emhist/emhist_03-Jan-2021 07:55:31.mat')
-  end
-  
+    
   %% preprocess inputs (for size, resolution, and dimentionality, and gpu-use)
   %Nz_X0     = size(X0,3);
   exPSF     = single(imresize3(PSFs.exPSF,PSFs.pram.dx/pram.dx,'Antialiasing',true));
   emPSF     = single(imresize3(PSFs.emPSF,PSFs.pram.dx/pram.dx,'Antialiasing',true));
   sPSF      = single(imresize3(PSFs.sPSF ,PSFs.pram.dx/pram.dx,'Antialiasing',true));
   E         = reshape(E,[size(E,1),size(E,2),1,size(E,3)]);
-  %X0        = reshape(X0,[size(X0,1),size(X0,2),size(X0,3),1,size(X0,4)]);
+  E_gt      = single(ones(pram.Ny,pram.Nx,1,1));
+  %X0       = reshape(X0,[size(X0,1),size(X0,2),size(X0,3),1,size(X0,4)]);
   if pram.useGPU ==1
     X0      = gpuArray(X0);
     E       = gpuArray(E);
@@ -45,7 +39,7 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   Eex_3D    = f_conv3nd(exPSF,E,'same');
   
   vol_Nz    = size(exPSF,3);
-  vol_inits = [1:5:size(X0,3)-vol_Nz];  
+  vol_inits = [1:5:size(X0,3)-vol_Nz];
   Nb        = length(vol_inits);
   for b = 1:Nb
     % b
@@ -60,86 +54,47 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
       X_em(:,:,:,j)      = f_conv3nd(emPSF,X_sctterd(:,:,:,j),'same');
     end
     
-    %% gt image (as in the absence of scattering)
-    Xgt_3d    = f_conv3nd(exPSF,X0_vol,'same');
+    %% gt image (as in PS-TPM in the absence of scattering)
+    Xgt_3D    = f_conv3nd(exPSF,X0_vol,'same');
   
     %% postprocess (cropping)
     y_range   = round(size(X_em,1)/2 - pram.Nx/2)+1:round(size(X_em,1)/2 + pram.Nx/2);
     x_range   = round(size(X_em,2)/2 - pram.Nx/2)+1:round(size(X_em,2)/2 + pram.Nx/2);    
 
 %   Eex_3D    = Eex_3D   (y_range,x_range,:,:,:);
-%   X0        = X0       (y_range,x_range,:,:,:);
-%   Xgt       = Xgt      (y_range,x_range,:,:,:);
+%   X0_vol    = X0_vol   (y_range,x_range,:,:,:);
+%   Xgt_3D    = Xgt_3D   (y_range,x_range,:,:,:);
 %   X_ex      = X_ex     (y_range,x_range,:,:,:);
 %   X_sctterd = X_sctterd(y_range,x_range,:,:,:);
 %   X_em      = X_em     (y_range,x_range,:,:,:);
 
     %% images (Xgt,Y0)
-    Xgt       = Xgt_3d(y_range,x_range,ceil(size(X_em,3)/2),:,:);
+    Xgt       = Xgt_3D(y_range,x_range,ceil(size(X_em,3)/2),:,:);
     Y0        = X_em  (y_range,x_range,ceil(size(X_em,3)/2),:,:);
     
-    %% backup code with dim(X0) = [Ny Nx Nz 1 Nb]  
-%   X_ex      = Eex_3D .* X0;
-%   
-%   % X_sctterd = f_conv2nd(sPSF,X_ex,'same');        % this is slower than looping outside the function as below  
-%   tic
-%   for i=1:size(X_ex,5)
-%     for j=1:size(X_ex,4)                              % using the loop in the function is slow for some reason
-%       X_sctterd(:,:,:,j,i) = f_conv2nd(sPSF ,X_ex(:,:,:,j,i),'same');
-%     end
-%   end
-%   toc
-%   % X_em      = f_conv3nd(emPSF,X_sctterd,'same');  % this is slower than looping outside the function as below
-%   for i=1:size(X_ex,5)  
-%     for j=1:size(X_ex,4)                              % using the loop in the function is slow for some reason
-%       X_em(:,:,:,j,i)      = f_conv3nd(emPSF,X_sctterd(:,:,:,j,i),'same');
-%     end
-%   end
-%   %% gt image (as in the absence of scattering)
-%   Xgt       = f_conv3nd(exPSF,X0,'same');
-%   
-%   %% postprocess (cropping)
-%   y_range   = round(size(X_em,1)/2 - pram.Nx/2)+1:round(size(X_em,1)/2 + pram.Nx/2);
-%   x_range   = round(size(X_em,2)/2 - pram.Nx/2)+1:round(size(X_em,2)/2 + pram.Nx/2);    
-%     
-%   Eex_3D    = Eex_3D   (y_range,x_range,:,:,:);
-%   X0        = X0       (y_range,x_range,:,:,:);
-%   Xgt       = Xgt      (y_range,x_range,:,:,:);
-%   X_ex      = X_ex     (y_range,x_range,:,:,:);
-%   X_sctterd = X_sctterd(y_range,x_range,:,:,:);
-%   X_em      = X_em     (y_range,x_range,:,:,:);
-% 
-%   %% images (Xgt,Y0)
-%   Xgt       = Xgt (:,:,ceil(size(X_em,3)/2),:,:);
-%   Y0        = X_em(:,:,ceil(size(X_em,3)/2),:,:);
-
-    %% cont...
-    Y0        = double(5*pram.maxcount*Y0/max(Y0(:))); 
-    Xgt       = 5*Xgt./max(Xgt(:));
-  
-%   [Yhat YhatADU]      = f_simulateIm_emCCD(Y0,emhist,pram);
-%   Yhat_all(:,:,:,:,b) = Yhat;
+    %% match experimental counts (refer to f_get_extPettern and f_read_data on the original data folder)
+    % Note: look up why there's a scaling factor 5? 
+    % Y0        = double(5*pram.maxcount*Y0/max(Y0(:)));
+    % Xgt       = 5*Xgt./max(Xgt(:));    
+    Y0        = double(pram.maxcount*Y0/max(Y0(:)));
+    Xgt       = Xgt./max(Xgt(:));
     
     Y0_all  (:,:,:,:,b) = Y0;
-    Xgt_all (:,:,:,:,b) = Xgt;    
+    Xgt_all (:,:,:,:,b) = Xgt;
   end
   
-  
+  %% load emccd noise distributions for Yhat    
   % max_input_photons = max(poissrnd(max(Y0(:)),[1 1000]))*2;
   % N_reps            = pram.cam_emhist_Nreps;
   % emhist            = f_genEmhist(max_input_photons,N_reps,pram);
-%   try
-%     load('./_emhist/emhist_03-Jan-2021 07_55_31.mat') 
-%   catch
-%     load('./_emhist/emhist_03-Jan-2021 07:55:31.mat')
-%   end
+  try
+    load('./_emhist/emhist_03-Jan-2021 07_55_31.mat') 
+  catch
+    load('./_emhist/emhist_03-Jan-2021 07:55:31.mat')
+  end
   [Yhat_all YhatADU]= f_simulateIm_emCCD(Y0_all,emhist,pram);
   
   %% change dims for output
-  Xgt       = reshape(Xgt_all ,[pram.Ny pram.Nx 1       Nb]); 
+  Xgt       = reshape(Xgt_all ,[pram.Ny pram.Nx 1       Nb]);
   Yhat      = reshape(Yhat_all,[pram.Ny pram.Nx pram.Nt Nb]);
 end
-
-
-
-
