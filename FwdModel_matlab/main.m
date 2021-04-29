@@ -49,9 +49,53 @@ switch pram.sim2dOr3d
 
       [j round(toc)]  
     end
+  case '3D'
+    pram.dz = pram.dx;
+    pram.Nb = 5000;
+    %% simulate sPSF, exPSF, and emPSF
+    % reset(gpuDevice(1));reset(gpuDevice(2));          % to avoid "Out of memory on device..." errors 
+    % pram.z0_um      = -6*pram.sl;                     % [um]      depth (z=0 is the surface and -ve is below)
+    % PSFs = f_simPSFs3D(pram);
+    % load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')      % z0 = -2 sls
+    % load('./_PSFs/PSFs26-Apr-2021 05:15:18.mat')      % z0 = -4 sls  
+      load('./_PSFs/PSFs20-Apr-2021 05:40:28.mat')      % z0 = -6 sls
+    
+    %% simulate training data  
+    %N_beads     = round(pram.Nz * 1000/64);            % used in 2D case
+    
+    pram.Nz     = 100; 
+    N_beads     = round(pram.Nz * 100/64);              % new on 2021-04-16
+
+    clear DataIn DataGt
+    DataIn = zeros(pram.Ny,pram.Nx,pram.Nt,pram.Nb,'single');
+    DataGt = zeros(pram.Ny,pram.Nx,1      ,pram.Nb,'single');          
+    
+    X0                        = f_genobj_beads3D_1um_4um(N_beads,pram);
+    [Yhat Xgt]                = f_fwd3D(X0,E,PSFs,pram);
+    Nmb                       = size(Xgt,4);
+    
+    tic
+    t   = 1;
+    for j = 1:floor(pram.Nb/Nmb)
+      X0                      = f_genobj_beads3D_1um_4um(N_beads,pram);
+     [Yhat Xgt]               = f_fwd3D(X0,E,PSFs,pram);
+      
+      Nmb                     = size(Xgt,4);
+      DataIn(:,:,:,t:t+Nmb-1) = single(gather(Yhat));
+      DataGt(:,:,:,t:t+Nmb-1) = single(gather(Xgt )); 
+
+      fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b')
+      fprintf('\nbatch = %0.4d | b = %0.5d | time = %0.4d/%0.4d [mins]',...
+                           j,          t,  round(toc/60), round(pram.Nb*toc/(t*60)))                         
+      t = t+Nmb;
+    end
+    
+    DataIn                    = DataIn(:,:,:,1:t-1);
+    DataGt                    = DataGt(:,:,:,1:t-1);
+end
 
 %% save simulation data
-N_sls       = abs(PSFs.pram.z0_um/PSFs.pram.sl);
+N_sls       = round(abs(PSFs.pram.z0_um/PSFs.pram.sl));
 saveDir     = ['./_results/_cnn_synthTrData/' date '/' pram.pattern_typ '/']; 
 nameStem    = sprintf('beads_data_%dsls_',N_sls);
 mkdir(saveDir)
@@ -81,41 +125,8 @@ DataIn_real_beads2 = Y_exp.beads2;
 DataGt_real_beads2 = X_refs.beads2_sf_wf0;
 fileNameStem = [saveDir nameStem '_real_beads2.h5'];
 f_writeDataset_hdf5(fileNameStem,DataIn_real_beads2,DataGt_real_beads2);
-  case '3D'
-    %% simulate sPSF, exPSF, and emPSF
-    PSFs = f_simPSFs3D(pram);
-            
-    %% simulate training data  
-    N_beads     = round(pram.Nz * 1000/64);
-    N_beads     = round(pram.Nz * 100/64);% new on 2021-04-16
-    t = 1;
-    clear X0
-    for j = 1:ceil(pram.Nb/pram.Nz)
-      j
-      X0_temp               = f_genobj_beads3D_1um_4um(N_beads,pram);
-      Nmb_t                 = size(X0_temp,3);
-      X0(:,:,1,t:t+Nmb_t-1) = gather(X0_temp); 
-      t = t+Nmb_t;
-    end
-    pram.Nb = size(X0,4);
 
-    % minibatch size is selected based on f_fwd's run time. ~48 works ok on GPU.
-    Nmb     = 48;                                        
-
-    t = 1;
-    clear DataIn DataGt
-    DataIn = zeros(pram.Ny,pram.Nx,pram.Nt,floor(pram.Nb/Nmb)*Nmb,'single');
-    DataGt = zeros(pram.Ny,pram.Nx,1      ,floor(pram.Nb/Nmb)*Nmb,'single');
-    for j = 1:floor(pram.Nb/Nmb)
-      tic
-
-      [Yhat Xgt]  = f_fwd3D(X0(:,:,:,t:t+Nmb-1),E,PSFs,pram);
-      DataIn(:,:,:,t:t+Nmb-1) = single(gather(Yhat));
-      DataGt(:,:,:,t:t+Nmb-1) = single(gather(Xgt)); 
-      t = t+Nmb;
-
-      [j round(toc)]  
-    end
-
-end
-
+%% temp section
+max_input_photons = max(poissrnd(pram.maxcount,[1 1000]))*2;
+N_reps            = pram.cam_emhist_Nreps;
+emhist            = f_genEmhist(max_input_photons,N_reps,pram);

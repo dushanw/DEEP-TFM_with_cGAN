@@ -73,7 +73,7 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
     Y0        = X_em  (y_range,x_range,ceil(size(X_em,3)/2),:,:);
     
     %% match experimental counts (refer to f_get_extPettern and f_read_data on the original data folder)
-    % Note: look up why there's a scaling factor 5? 
+    % Note: look up why there's a scaling factor 5? we removed this part
     % Y0        = double(5*pram.maxcount*Y0/max(Y0(:)));
     % Xgt       = 5*Xgt./max(Xgt(:));    
     Y0        = double(pram.maxcount*Y0/max(Y0(:)));
