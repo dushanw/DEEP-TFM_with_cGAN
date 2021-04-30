@@ -1,7 +1,12 @@
 function [Xhat XhatADU] = f_simulateIm_emCCD(X0,emhist,pram)
 
-  Xdark   = pram.cam_dXdt_dark * pram.cam_t_exp;     % [e-]    Dark noise
-  Xhat    = poissrnd(X0 + Xdark);                    % [e-]    Poisson shot noise  
+  Xdark   = pram.cam_dXdt_dark * pram.cam_t_exp;                          % [e-]    Dark noise
+  
+  try 
+    Xhat        = poissrnd(X0 + Xdark);                                   % [e-]    Poisson shot noise
+  catch
+    Xhat        = gpuArray(poissrnd(gather(X0) + Xdark));                 % [e-]    poissrnd doesnt work on GPU for numbers >14        
+  end
   
   %% Em-process - approximate method with pre simulated distribution 
   N_reps            = size(emhist,2);
@@ -17,7 +22,7 @@ function [Xhat XhatADU] = f_simulateIm_emCCD(X0,emhist,pram)
 %   fprintf('%0.4d/%0.4d',0,pram.cam_N_gainStages)
 %   for i=1:pram.cam_N_gainStages 
 %     fprintf('\b\b\b\b\b\b\b\b\b%0.4d/%0.4d',i,pram.cam_N_gainStages)
-%     Xhat  = Xhat + binornd(Xhat,pram.cam_Brnuli_alpha);               % [e-]    Add binomial noise due to each step in the Em process
+%     Xhat  = Xhat + binornd(Xhat,pram.cam_Brnuli_alpha);                 % [e-]    Add binomial noise due to each step in the Em process
 %   end
 %   fprintf('\n')
   
