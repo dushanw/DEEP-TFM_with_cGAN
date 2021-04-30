@@ -7,7 +7,7 @@ function pram = f_pram_init()
   %% names
   pram.sim2dOr3d    = '3D';                               % {'2D','3D'}
   pram.mic_typ      = 'DMD';                              % {'DMD','WGD'}
-  pram.pattern_typ  = 'dmd_exp_tfm_mouse_20201224_100um'; % {'dmd_sim_rnd',
+  pram.pattern_typ  = 'dmd_exp_tfm_mouse_20201224_400um'; % {'dmd_sim_rnd',
                                                           %  'dmd_exp_tfm_beads_7sls_20201219'
                                                           %  'dmd_exp_tfm_mouse_20201224_sf'
                                                           %  'dmd_exp_tfm_mouse_20201224_100um'
@@ -15,9 +15,8 @@ function pram = f_pram_init()
                                                           %  'dmd_exp_tfm_mouse_20201224_300um'
                                                           %  'dmd_exp_tfm_mouse_20201224_350um'
                                                           %  'dmd_exp_tfm_mouse_20201224_400um'
-                                                          %  'dmd_exp_tfm_mouse_20201224_all'                                                        
-                                                          % }
-  pram.dataset      = 'mouse_100um';                      % {'minist',
+                                                          %  'dmd_exp_tfm_mouse_20201224_all'}
+  pram.dataset      = 'mouse_400um';                      % {'minist',
                                                           %  'andrewCells_fociW3_63x_maxProj',
                                                           %  'andrewCells_dapi_20x_maxProj',
                                                           %  'beads',

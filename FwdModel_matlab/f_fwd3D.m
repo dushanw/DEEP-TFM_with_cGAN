@@ -39,7 +39,9 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   Eex_3D    = f_conv3nd(exPSF,E,'same');
   
   vol_Nz    = size(exPSF,3);
-  vol_inits = [1:5:size(X0,3)-vol_Nz];
+  % vol_inits = [1:5:size(X0,3)-vol_Nz];
+  vol_inits = linspace(1,size(X0,3)-vol_Nz,10);
+  
   Nb        = length(vol_inits);
   for b = 1:Nb
     % b
@@ -88,9 +90,10 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   % N_reps            = pram.cam_emhist_Nreps;
   % emhist            = f_genEmhist(max_input_photons,N_reps,pram);
   try
-    load('./_emhist/emhist_03-Jan-2021 07_55_31.mat') 
+    load('./_emhist/emhist_03-Jan-2021 07_55_31.mat');% upt to  15 photons
   catch
-    load('./_emhist/emhist_03-Jan-2021 07:55:31.mat')
+    load('./_emhist/emhist_03-Jan-2021 07:55:31.mat');% upt to  15 photons
+    load('./_emhist/emhist_29-Apr-2021 02:09:25.mat');% upt to 100 photons
   end
   [Yhat_all YhatADU]= f_simulateIm_emCCD(Y0_all,emhist,pram);
   

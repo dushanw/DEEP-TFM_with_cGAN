@@ -8,9 +8,18 @@
 clc;clear all;close all
 addpath('./_extPatternsets/')
 
-pram    = f_pram_init();
-pram.Nt = 32;
+pram                  = f_pram_init();
+pram.pattern_typ      = 'dmd_exp_tfm_mouse_20201224_sf';      % pram.maxcount = {10.8549 [for 400um],
+                                                              %                  25.0622 [for 350um],
+                                                              %                  22.9540 [for 300um],
+                                                              %                  46.7010 [for 200um],
+                                                              %                  56.0317 [for 100um],
+                                                              %                  25.0622 [for sf   ],
+pram.dataset          = 'mouse_sf';
+pram.Nt               = 32;
+
 [E Y_exp X_refs pram] = f_get_extPettern(pram);
+pram.maxcount
 
 switch pram.sim2dOr3d
   case '2D'
@@ -50,48 +59,91 @@ switch pram.sim2dOr3d
       [j round(toc)]  
     end
   case '3D'
-    pram.dz = pram.dx;
-    pram.Nb = 5000;
-    %% simulate sPSF, exPSF, and emPSF
-    % reset(gpuDevice(1));reset(gpuDevice(2));          % to avoid "Out of memory on device..." errors 
-    % pram.z0_um      = -6*pram.sl;                     % [um]      depth (z=0 is the surface and -ve is below)
-    % PSFs = f_simPSFs3D(pram);
-    % load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')      % z0 = -2 sls
-    % load('./_PSFs/PSFs26-Apr-2021 05:15:18.mat')      % z0 = -4 sls  
-      load('./_PSFs/PSFs20-Apr-2021 05:40:28.mat')      % z0 = -6 sls
-    
-    %% simulate training data  
-    %N_beads     = round(pram.Nz * 1000/64);            % used in 2D case
-    
-    pram.Nz     = 100; 
-    N_beads     = round(pram.Nz * 100/64);              % new on 2021-04-16
+    switch pram.dataset
+      case 'beads'
+        pram.dz = pram.dx;
+        pram.Nb = 5000;
+        %% simulate sPSF, exPSF, and emPSF
+        % reset(gpuDevice(1));reset(gpuDevice(2));          % to avoid "Out of memory on device..." errors 
+        % pram.z0_um      = -6*pram.sl;                     % [um]      depth (z=0 is the surface and -ve is below)
+        % PSFs = f_simPSFs3D(pram);
+        % load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')      % z0 = -2 sls
+        % load('./_PSFs/PSFs26-Apr-2021 05:15:18.mat')      % z0 = -4 sls  
+          load('./_PSFs/PSFs20-Apr-2021 05:40:28.mat')      % z0 = -6 sls
 
-    clear DataIn DataGt
-    DataIn = zeros(pram.Ny,pram.Nx,pram.Nt,pram.Nb,'single');
-    DataGt = zeros(pram.Ny,pram.Nx,1      ,pram.Nb,'single');          
-    
-    X0                        = f_genobj_beads3D_1um_4um(N_beads,pram);
-    [Yhat Xgt]                = f_fwd3D(X0,E,PSFs,pram);
-    Nmb                       = size(Xgt,4);
-    
-    tic
-    t   = 1;
-    for j = 1:floor(pram.Nb/Nmb)
-      X0                      = f_genobj_beads3D_1um_4um(N_beads,pram);
-     [Yhat Xgt]               = f_fwd3D(X0,E,PSFs,pram);
-      
-      Nmb                     = size(Xgt,4);
-      DataIn(:,:,:,t:t+Nmb-1) = single(gather(Yhat));
-      DataGt(:,:,:,t:t+Nmb-1) = single(gather(Xgt )); 
+        %% simulate training data  
+        %N_beads     = round(pram.Nz * 1000/64);            % used in 2D case
 
-      fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b')
-      fprintf('\nbatch = %0.4d | b = %0.5d | time = %0.4d/%0.4d [mins]',...
-                           j,          t,  round(toc/60), round(pram.Nb*toc/(t*60)))                         
-      t = t+Nmb;
+        pram.Nz     = 100; 
+        N_beads     = round(pram.Nz * 100/64);              % new on 2021-04-16
+
+        clear DataIn DataGt
+        DataIn = zeros(pram.Ny,pram.Nx,pram.Nt,pram.Nb,'single');
+        DataGt = zeros(pram.Ny,pram.Nx,1      ,pram.Nb,'single');          
+
+        X0                        = f_genobj_beads3D_1um_4um(N_beads,pram);
+        [Yhat Xgt]                = f_fwd3D(X0,E,PSFs,pram);
+        Nmb                       = size(Xgt,4);
+
+        tic
+        t   = 1;
+        for j = 1:floor(pram.Nb/Nmb)
+          X0                      = f_genobj_beads3D_1um_4um(N_beads,pram);
+         [Yhat Xgt]               = f_fwd3D(X0,E,PSFs,pram);
+
+          Nmb                     = size(Xgt,4);
+          DataIn(:,:,:,t:t+Nmb-1) = single(gather(Yhat));
+          DataGt(:,:,:,t:t+Nmb-1) = single(gather(Xgt )); 
+
+          fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b')
+          fprintf('\nbatch = %0.4d | b = %0.5d | time = %0.4d/%0.4d [mins]',...
+                               j,          t,  round(toc/60), round(pram.Nb*toc/(t*60)))                         
+          t = t+Nmb;
+        end
+
+        DataIn                    = DataIn(:,:,:,1:t-1);
+        DataGt                    = DataGt(:,:,:,1:t-1);
+      case 'mouse_200um'                
+        pram.dz = pram.dx;
+        pram.Nb = 5000;
+        %% simulate sPSF, exPSF, and emPSF
+        load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')        % z0 = -2 sls
+
+        %% simulate training data
+        pram.Nz     = 100;
+
+        clear DataIn DataGt
+        DataIn = zeros(pram.Ny,pram.Nx,pram.Nt,pram.Nb,'single');
+        DataGt = zeros(pram.Ny,pram.Nx,1      ,pram.Nb,'single');          
+          
+        % read all cells     
+        load('./_datasets/PS_SOM_mice_20190317.mat')        % loads variable named Data
+        Nb_per_stack                = 10;                   % rough value of training images generated by scanning one stack, set as 10 in the f_fwd3d
+        pram.Npch_perCell           = round(pram.Nb/(length(Data.cell)*Nb_per_stack));
+        
+        tic
+        t   = 1;
+        for i=1:length(length(Data.cell))
+          V_ps                      = Data.cell{i};
+          X0s                       = f_genobj_neuronPatches(V_ps,pram);
+
+          for j = 1:length(X0s)
+           [Yhat Xgt]               = f_fwd3D(X0s{j},E,PSFs,pram);
+
+            Nmb                     = size(Xgt,4);
+            DataIn(:,:,:,t:t+Nmb-1) = single(gather(Yhat));
+            DataGt(:,:,:,t:t+Nmb-1) = single(gather(Xgt )); 
+
+            fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b')
+            fprintf('\nbatch = %0.4d | b = %0.5d | time = %0.4d/%0.4d [mins]',...
+                                 j,          t,  round(toc/60), round(pram.Nb*toc/(t*60)))                         
+            t = t+Nmb;
+          end
+
+          DataIn                    = DataIn(:,:,:,1:t-1);
+          DataGt                    = DataGt(:,:,:,1:t-1);
+        end
     end
-    
-    DataIn                    = DataIn(:,:,:,1:t-1);
-    DataGt                    = DataGt(:,:,:,1:t-1);
 end
 
 %% save simulation data
