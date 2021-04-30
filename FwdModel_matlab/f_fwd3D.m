@@ -40,7 +40,7 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   
   vol_Nz    = size(exPSF,3);
   % vol_inits = [1:5:size(X0,3)-vol_Nz];
-  vol_inits = linspace(1,size(X0,3)-vol_Nz,10);
+  vol_inits = round(linspace(1,size(X0,3)-vol_Nz-1,10));
   
   Nb        = length(vol_inits);
   for b = 1:Nb
