@@ -63,7 +63,7 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   Nb        = b_t - 1;
   
   for b = 1:Nb
-    b
+    % b
     X0_vol  = X0(:,:,vol_inits(b):vol_inits(b)+vol_Nz-1);
     X0_vol  = imrotate(X0_vol,90*rem(b,4));
     X_ex    = Eex_3D .* X0_vol;
