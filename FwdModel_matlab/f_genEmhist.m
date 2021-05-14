@@ -31,9 +31,11 @@ function emhist = f_genEmhist(max_input_photons,N_reps,pram)
   toc
 
   emhist = [emhist{:}];
+  pram_usedInEmhist = pram;
   
   mkdir('./_emhist')
-  save(['./_emhist/emhist_' datestr(datetime('now')) '.mat'],'emhist')  
+  %save(['./_emhist/emhist_' datestr(datetime('now')) '.mat'],'emhist','pram_usedInEmhist')
+  save(['./_emhist/emhist_' pram.dataset '_' date '.mat'],'emhist','pram_usedInEmhist')
 end
 
 

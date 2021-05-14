@@ -52,11 +52,11 @@ function pram = f_pram_init()
   pram.z0_um      = -7*pram.sl;                           % [um]      depth (z=0 is the surface and -ve is below)
     
   %% camera parameters <THIS IS OLD NEED UPDATING WITH THE NEW CAM MODEL>
-  pram.binR    = 1;
+  pram.binR             = 1;
   pram.cam_emhist_Nreps = 10000;
   
   %% run environment parameters  
-  pram.useGPU  = gpuDeviceCount>1 ;
+  pram.useGPU   = gpuDeviceCount>1 ;
   
 end
 
