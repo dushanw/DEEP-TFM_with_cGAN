@@ -1,7 +1,7 @@
 % next to do is to go through and modify for the 4th domention of X0 in puts
 
 
-function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
+function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,emhist,pram)
   % Input dimentionality
   %   X0          - [y,x,z]
   %   E           - [y,x,t=Nt]
@@ -109,12 +109,12 @@ function [Yhat Xgt] = f_fwd3D(X0,E,PSFs,pram)
   % max_input_photons = max(poissrnd(max(Y0(:)),[1 1000]))*2;
   % N_reps            = pram.cam_emhist_Nreps;
   % emhist            = f_genEmhist(max_input_photons,N_reps,pram);
-  try
-    load('./_emhist/emhist_03-Jan-2021 07_55_31.mat');% upt to  15 photons
-  catch
-    load('./_emhist/emhist_03-Jan-2021 07:55:31.mat');% upt to  15 photons
-    load('./_emhist/emhist_29-Apr-2021 02:09:25.mat');% upt to 100 photons
-  end
+%   try
+%     load('./_emhist/emhist_03-Jan-2021 07_55_31.mat');% upt to  15 photons
+%   catch
+%     load('./_emhist/emhist_03-Jan-2021 07:55:31.mat');% upt to  15 photons
+%     load('./_emhist/emhist_29-Apr-2021 02:09:25.mat');% upt to 100 photons
+%   end
   [Yhat_all YhatADU]= f_simulateIm_emCCD(Y0_all,emhist,pram);
   
   %% change dims for output
