@@ -73,5 +73,5 @@ function PSFs = f_simPSFs3D(pram)
   %PSFs.emConvSPSF = emConvSPSF;
   PSFs.pram       = mcls_pram;
         
-  save([mcls_pram.savepath 'PSFs' datestr(datetime('now')) '.mat'],'PSFs'); % save sPSF
+  save([mcls_pram.savepath 'PSFs' datestr(datetime('now')) '.mat'],'PSFs','-v7.3'); % save sPSF
 end
