@@ -13,9 +13,10 @@ function [Xhat XhatADU] = f_simulateIm_emCCD(X0,emhist,pram)
   max_input_photons = size(emhist,1);
   
   Xhat(Xhat>max_input_photons) = max_input_photons;
+  Xhat_temp         = Xhat;
   for i = 1:max_input_photons
-    i_inds = find(Xhat(:)==i); 
-    Xhat(Xhat(:)==i) = emhist(i,randi(N_reps,size(i_inds)));
+    i_inds          = find(Xhat_temp(:)==i); 
+    Xhat(i_inds)    = emhist(i,randi(N_reps,size(i_inds)));
   end
   
   %% EM-process - direct methord
