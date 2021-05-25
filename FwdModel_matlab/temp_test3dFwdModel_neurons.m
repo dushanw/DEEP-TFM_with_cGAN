@@ -1,5 +1,6 @@
 % 2021-04-26 by Duahan N. Wadduwage
 % 2021-04-30 modified by Dushan N. Wadduwage for neuron and brain vasculature data
+% 2021-05-25 updated by DNW (minor)
 
 clc;clear all;close all
 addpath('./_extPatternsets/')
@@ -28,7 +29,8 @@ pram.z0_um  = - pram.sl * N_sls;
 % PSFs        = f_simPSFs3D(pram);
 switch N_sls
   case 2
-    load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')    % z0 = -2 sls    
+    %load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')   % z0 = -2 sls    
+    load('./_PSFs/PSFs23-May-2021 14:46:23.mat')    % z0 = -2 sls (for 326x326 data size - i.e. neuron/brain-vasculature data PSFs are 1305×1305×67 of size)
   case 4
    %load('./_PSFs/PSFs26-Apr-2021 05:15:18.mat')    % z0 = -4 sls
     load('./_PSFs/PSFs04-May-2021 09:52:47.mat')    % z0 = -4 sls (for neuron/brain-vasculature data PSFs are 1305×1305×67 of size)
@@ -44,7 +46,8 @@ V_ps              = Data.cell{1};
 X0s               = f_genobj_neuronPatches(V_ps,pram);
 X0                = X0s{1};
 
-% load emhist
+% load emhist (for camera noise model)  
+load('./_emhist/emhist_29-Apr-2021 02:09:25.mat');  % upt to 100 photons
 [Yhat Xgt]        = f_fwd3D(X0,E,PSFs,emhist,pram);
 
 DataIn            = single(gather(Yhat));
@@ -54,6 +57,7 @@ dest_dir          = ['~/Documents/tempData/'];
 file_name         = sprintf('%s_DataIn_and_Gt_mouse_%dsls.mat',date,N_sls);
 save([dest_dir file_name],'DataIn','DataGt');
 
+
 %% on local
 dest_dir          = ['~/Documents/tempData/'];
 file_name         = sprintf('%s_DataIn_and_Gt_mouse_%dsls.mat',date,N_sls);
@@ -61,11 +65,14 @@ system(['scp harvard@10.245.73.7:' dest_dir file_name ' ./xx_temp'])
 
 load(['./xx_temp/' file_name])
 
-ind = randi(size(DataGt,4));
-figure;imagesc([rescale(mean(Y_exp.anml1_r1_300um,3)) rescale(mean(DataIn(:,:,:,ind),3)) rescale(DataGt(:,:,:,ind))]);axis image
+fields_Yexp       = fieldnames(Y_exp);
+ind               = randi(size(DataGt,4));
+figure;imagesc([rescale(mean(Y_exp.(fields_Yexp{1}),3)) ...
+                rescale(mean(DataIn(:,:,:,ind),3)) ...
+                rescale(     DataGt(:,:,:,ind))]);axis image
 
 for i=1:size(DataGt,4)
-  figure;imagesc([rescale(mean(Y_exp.anml1_r1_300um,3)) rescale(mean(DataIn(:,:,:,i),3)) rescale(DataGt(:,:,:,i))]);axis image
+  figure;imagesc([rescale(mean(Y_exp.(fields_Yexp{1}),3)) rescale(mean(DataIn(:,:,:,i),3)) rescale(DataGt(:,:,:,i))]);axis image
 end
 
 

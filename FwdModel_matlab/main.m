@@ -10,28 +10,39 @@ addpath('./_extPatternsets/')
 % load('../__manuscript/_figures/_inferno-tables')
 
 %% set parameters
-pram              = f_pram_init();
-pram.pattern_typ  = 'dmd_exp_tfm_beads_7sls_20201219';  % pram.maxcount = {10.8549 [for 400um], 8-sls
-                                                        %                  25.0622 [for 350um], 7-sls
-                                                        %                  22.9540 [for 300um], 6-sls
-                                                        %                  46.7010 [for 200um], 4-sls
-                                                        %                  56.0317 [for 100um], 2-sls
-                                                        %                  25.0622 [for sf   ], 0-sls
-pram.dataset      = 'beads';
-pram.Nt           = 32;
-pram.Nb           = 5000;
+pram                  = f_pram_init();
+pram.pattern_typ      = 'dmd_exp_tfm_mouse_20201224_100um';  % maxcounts from the calibration processes.
+                                                             % pram.maxcount = {10.8549 [for mouse_400um], 8-sls
+                                                             %                  25.0622 [for mouse_350um], 7-sls
+                                                             %                  22.9540 [for mouse_300um], 6-sls
+                                                             %                  46.7010 [for mouse_200um], 4-sls
+                                                             %                  56.0317 [for mouse_100um], 2-sls
+                                                             %                  25.0622 [for mouse_sf   ], 0-sls
+pram.dataset          = 'mouse_100um';
+pram.Nt               = 32;
+pram.Nb               = 5000;
 
 %% load data
 [E Y_exp X_refs pram] = f_get_extPettern(pram);
+%pram.maxcount        = 10;                                  % overwrite the maxcount from the calibration as the 
+                                                             % calibration seems off. We need to comeback and deal with 
+                                                             % it if the fixed value doesnt work for all cases <2021-05-24>.
 
 %% simulate sPSF, exPSF, and emPSF        
-% reset(gpuDevice(1));reset(gpuDevice(2));              % to avoid "Out of memory on device..." errors 
-% PSFs = f_simPSFs3D(pram);
+% pram.z0_um          = -6*pram.sl;                          % [um] depth (z=0 is the surface and -ve is below), set for beads
+% reset(gpuDevice(1));reset(gpuDevice(2));                   % to avoid "Out of memory on device..." errors 
+% PSFs = f_simPSFs3D(pram);                                  % simuated and saved in ./_PSFs/ dir as
+                                                             %   PSFs23-May-2021 02:57:32.mat - z0_um:  4.4450   (i.e. surface)
+                                                             %   PSFs23-May-2021 14:46:23.mat - z0_um: -94.5550  (i.e. 2-sls, for mouse_100um)
+                                                             %   PSFs04-May-2021 09:52:47.mat - z0_um: -194.5550 (i.e. 4-sls, for mouse_200um)
+                                                             %   PSFs02-May-2021 22:52:41.mat - z0_um: -294.5550 (i.e. 6-sls, for mouse_300um)
 
 %% simulate for camera noise model (generate emhist)  
 % max_input_photons = max(poissrnd(pram.maxcount,[1 1000]))*2;
 % N_reps            = pram.cam_emhist_Nreps;
 % emhist            = f_genEmhist(max_input_photons,N_reps,pram);
+                                                             % simulated and saved in ./_emhist dir as,
+                                                             %   emhist_29-Apr-2021 02:09:25.mat (upt to 100 photons)  
 
 %% run simulation
 switch pram.sim2dOr3d
@@ -73,33 +84,28 @@ switch pram.sim2dOr3d
     end
   case '3D'
     switch pram.dataset
-      case 'beads'
+      case 'beads'      
         pram.dz = pram.dx;
-        pram.Nb = 5000;
-        %% simulate sPSF, exPSF, and emPSF
-        % reset(gpuDevice(1));reset(gpuDevice(2));          % to avoid "Out of memory on device..." errors 
-        % pram.z0_um      = -6*pram.sl;                     % [um]      depth (z=0 is the surface and -ve is below)
-        % PSFs = f_simPSFs3D(pram);
-        % load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')      % z0 = -2 sls
+        %% load sPSF, exPSF, and emPSF <try -2sls and -4sls if -6sls didnt work>
+        % load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')      % z0 = -2 sls 
         % load('./_PSFs/PSFs26-Apr-2021 05:15:18.mat')      % z0 = -4 sls  
           load('./_PSFs/PSFs20-Apr-2021 05:40:28.mat')      % z0 = -6 sls
         
-        %% load emhist for camera noise model  
-        load('./_emhist/emhist_beads_14-May-2021.mat');  % upt to  15 photons  
-          
-        %% simulate training data  
-        %N_beads     = round(pram.Nz * 1000/64);            % used in 2D case
-
-        pram.Nz     = 100; 
-        N_beads     = round(pram.Nz * 100/64);              % new on 2021-04-16
+        % load emhist (for camera noise model)
+        load('./_emhist/emhist_29-Apr-2021 02:09:25.mat');  % upt to 100 photons
+    
+        %% simulate training data
+        pram.Nz     = 100;
+        %N_beads    = round(pram.Nz * 1000/64);            % used in 2D case
+        N_beads     = round(pram.Nz * 100/64);             % new on 2021-04-16
 
         clear DataIn DataGt
-        DataIn = zeros(pram.Ny,pram.Nx,pram.Nt,pram.Nb,'single');
-        DataGt = zeros(pram.Ny,pram.Nx,1      ,pram.Nb,'single');          
+        DataIn      = zeros(pram.Ny,pram.Nx,pram.Nt,pram.Nb,'single');
+        DataGt      = zeros(pram.Ny,pram.Nx,1      ,pram.Nb,'single');          
 
-        X0                        = f_genobj_beads3D_1um_4um(N_beads,pram);
-        [Yhat Xgt]                = f_fwd3D(X0,E,PSFs,emhist,pram);
-        Nmb                       = size(Xgt,4);
+        X0          = f_genobj_beads3D_1um_4um(N_beads,pram);
+        [Yhat Xgt]  = f_fwd3D(X0,E,PSFs,emhist,pram);
+        Nmb         = size(Xgt,4);
 
         tic
         t   = 1;
@@ -117,6 +123,45 @@ switch pram.sim2dOr3d
           t = t+Nmb;
         end
 
+        DataIn                    = DataIn(:,:,:,1:t-1);
+        DataGt                    = DataGt(:,:,:,1:t-1);
+      case 'mouse_100um'
+        % load sPSF, exPSF, and emPSF
+        load('./_PSFs/PSFs23-May-2021 14:46:23.mat')        % z0 = -2 sls (for 326x326 data size - i.e. neuron/brain-vasculature data PSFs are 1305×1305×67 of size)
+                        
+        % load emhist (for camera noise model)  
+        load('./_emhist/emhist_29-Apr-2021 02:09:25.mat');  % upt to 100 photons
+        
+        clear DataIn DataGt
+        DataIn = zeros(pram.Ny,pram.Nx,pram.Nt,pram.Nb,'single');
+        DataGt = zeros(pram.Ny,pram.Nx,1      ,pram.Nb,'single');
+          
+        % read all cells
+        load('./_datasets/PS_SOM_mice_20190317.mat')        % loads variable named Data
+        pram.Nz                     = 100;                  % sets Nz of the data cube
+        Nb_per_stack                = 20;                   % rough value of training images generated by scanning one stack, set as 10 in the f_fwd3d
+        pram.Npch_perCell           = round(pram.Nb/(length(Data.cell)*Nb_per_stack));
+        
+        tic
+        t   = 1;
+        for i=1:length(Data.cell)
+          V_ps                      = Data.cell{i};
+          X0s                       = f_genobj_neuronPatches(V_ps,pram);
+          % figure;imagesc(max(X0s{1},[],3));axis image;colorbar
+          
+          for j = 1:length(X0s)
+           [Yhat Xgt]               = f_fwd3D(X0s{j},E,PSFs,emhist,pram);
+
+            Nmb                     = size(Xgt,4);
+            DataIn(:,:,:,t:t+Nmb-1) = single(gather(Yhat));
+            DataGt(:,:,:,t:t+Nmb-1) = single(gather(Xgt ));            
+            
+            fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b')
+            fprintf('\nbatch = %0.4d | b = %0.5d | time = %0.4d/%0.4d [mins]',...
+                                 j,          t,  round(toc/60), round(pram.Nb*toc/(t*60)))                         
+            t = t+Nmb;
+          end
+        end
         DataIn                    = DataIn(:,:,:,1:t-1);
         DataGt                    = DataGt(:,:,:,1:t-1);
       case 'mouse_200um'
@@ -157,7 +202,7 @@ switch pram.sim2dOr3d
           end
         end
         DataIn                    = DataIn(:,:,:,1:t-1);
-        DataGt                    = DataGt(:,:,:,1:t-1);                    
+        DataGt                    = DataGt(:,:,:,1:t-1);
       case 'mouse_300um'
         % load sPSF, exPSF, and emPSF
         load('./_PSFs/PSFs02-May-2021 22:52:41.mat')      % z0 = -6 sls (for 326x326 data size - i.e. neuron/brain-vasculature data PSFs are 1305×1305×67 of size)        
@@ -196,15 +241,14 @@ switch pram.sim2dOr3d
           end
         end
         DataIn                    = DataIn(:,:,:,1:t-1);
-        DataGt                    = DataGt(:,:,:,1:t-1);
-                
-    end
-    end
+        DataGt                    = DataGt(:,:,:,1:t-1);              
+    end    
 end
 
 %% save simulated data
 N_sls         = round(abs(PSFs.pram.z0_um/PSFs.pram.sl));
 saveDir       = ['./_results/_cnn_synthTrData/' date '/' pram.pattern_typ '/'];
+% saveDir       = ['./_results/_cnn_synthTrData/' date '_maxcountsCalib/' pram.pattern_typ '/'];
 nameStem      = sprintf('%s_data_%dsls_',pram.dataset,N_sls);
 mkdir(saveDir)
 save([saveDir nameStem datestr(datetime('now')) '_pram_plusplus.mat'],'Y_exp','X_refs','pram','E','PSFs','-v7.3');
@@ -231,11 +275,4 @@ for i=1:length(fields_Yexp)
   fileNameStem= [saveDir nameStem fields_Yexp{i} '_exp.h5'];
   f_writeDataset_hdf5(fileNameStem,DataIn_exp,DataGt_exp);
 end
-
-
-
-
-
-
-
 
