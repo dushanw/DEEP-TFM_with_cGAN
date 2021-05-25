@@ -3,27 +3,34 @@
 clc;clear all;close all
 addpath('./_extPatternsets/')
 
-N_sls       = 2;
+
+for N_sls = [4 5 6]
+for mxCnt = [1.4142 5 10 50]
+  
+%N_sls       = 5;
 pram        = f_pram_init();
 pram.Nt     = 32;
 pram.pattern_typ  = 'dmd_exp_tfm_beads_7sls_20201219';
 pram.dataset      = 'beads'; 
 
 [E Y_exp X_refs pram] = f_get_extPettern(pram);
-% pram.maxcount     = 5;
+%pram.maxcount     = 50;
+pram.maxcount     = mxCnt;
 
 %% on-gpu-only
 pram.z0_um  = - pram.sl * N_sls;
-pram.dz     = pram.dx;                              % [um], depth (z=0 is the surface and -ve is below)
+% pram.dz     = pram.dx;                              % [um], depth (z=0 is the surface and -ve is below)
 pram.Nz     = 100;
 
 % reset(gpuDevice(1));reset(gpuDevice(2));          % to avoid "Out of memory on device..." errors 
 % PSFs        = f_simPSFs3D(pram);
 switch N_sls
   case 2
-    load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')    % z0 = -2 sls    
+    load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')    % z0 = -2 sls
   case 4
     load('./_PSFs/PSFs26-Apr-2021 05:15:18.mat')    % z0 = -4 sls
+  case 5
+    load('./_PSFs/PSFs25-May-2021 01:34:24.mat')    % z0 = -5 sls
   case 6
     load('./_PSFs/PSFs20-Apr-2021 05:40:28.mat')    % z0 = -6 sls
 end
@@ -40,16 +47,27 @@ DataIn      = single(gather(Yhat));
 DataGt      = single(gather(Xgt )); 
 
 dest_dir    = ['~/Documents/tempData/'];
-file_name   = sprintf('DataIn_and_Gt_%dsls_%s.mat',N_sls,date);
+file_name   = sprintf('DataIn_and_Gt_%dsls_Nbeads-%d_MxCnt-%0.d_%s.mat',N_sls,N_beads,round(pram.maxcount),date);
 save([dest_dir file_name],'DataIn','DataGt','pram');
 
 file_name
 
+end
+end
+
 %% on local
+
+for N_sls = [4 5 6]
+for mxCnt = [1 5 10 50]
+
+
 dest_dir    = ['~/Documents/tempData/'];
-file_name   = 'DataIn_and_Gt_4sls_14-May-2021.mat';% copy filename from the remote host
+%file_name   = 'DataIn_and_Gt_5sls_Nbeads-39_MxCnt-50_25-May-2021.mat';% copy filename from the remote host
+file_name   = sprintf('DataIn_and_Gt_%dsls_Nbeads-39_MxCnt-%d_25-May-2021.mat',N_sls,mxCnt);% copy filename from the remote host
 system(['scp harvard@10.245.73.7:' dest_dir file_name ' ./xx_temp'])
 
+end
+end
 load(['./xx_temp/' file_name])
 
 % imagesc([mean(Y_exp.beads1,3) mean(DataIn(:,:,:,1),3) mean(DataGt(:,:,:,1),3)]);axis image

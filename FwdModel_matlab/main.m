@@ -11,14 +11,14 @@ addpath('./_extPatternsets/')
 
 %% set parameters
 pram                  = f_pram_init();
-pram.pattern_typ      = 'dmd_exp_tfm_mouse_20201224_100um';  % maxcounts from the calibration processes.
+pram.pattern_typ      = 'dmd_exp_tfm_beads_7sls_20201219';  % maxcounts from the calibration processes.
                                                              % pram.maxcount = {10.8549 [for mouse_400um], 8-sls
                                                              %                  25.0622 [for mouse_350um], 7-sls
                                                              %                  22.9540 [for mouse_300um], 6-sls
                                                              %                  46.7010 [for mouse_200um], 4-sls
                                                              %                  56.0317 [for mouse_100um], 2-sls
                                                              %                  25.0622 [for mouse_sf   ], 0-sls
-pram.dataset          = 'mouse_100um';
+pram.dataset          = 'beads';
 pram.Nt               = 32;
 pram.Nb               = 5000;
 
@@ -29,9 +29,9 @@ pram.Nb               = 5000;
                                                              % it if the fixed value doesnt work for all cases <2021-05-24>.
 
 %% simulate sPSF, exPSF, and emPSF        
-% pram.z0_um          = -6*pram.sl;                          % [um] depth (z=0 is the surface and -ve is below), set for beads
-% reset(gpuDevice(1));reset(gpuDevice(2));                   % to avoid "Out of memory on device..." errors 
-% PSFs = f_simPSFs3D(pram);                                  % simuated and saved in ./_PSFs/ dir as
+pram.z0_um          = -5*pram.sl;                          % [um] depth (z=0 is the surface and -ve is below), set for beads
+reset(gpuDevice(1));reset(gpuDevice(2));                   % to avoid "Out of memory on device..." errors 
+PSFs = f_simPSFs3D(pram);                                  % simuated and saved in ./_PSFs/ dir as
                                                              %   PSFs23-May-2021 02:57:32.mat - z0_um:  4.4450   (i.e. surface)
                                                              %   PSFs23-May-2021 14:46:23.mat - z0_um: -94.5550  (i.e. 2-sls, for mouse_100um)
                                                              %   PSFs04-May-2021 09:52:47.mat - z0_um: -194.5550 (i.e. 4-sls, for mouse_200um)
@@ -85,11 +85,12 @@ switch pram.sim2dOr3d
   case '3D'
     switch pram.dataset
       case 'beads'      
-        pram.dz = pram.dx;
-        %% load sPSF, exPSF, and emPSF <try -2sls and -4sls if -6sls didnt work>
+        pram.dz = pram.dx; % <try withouht this so dz = 1>
+        %% load sPSF, exPSF, and emPSF <try -2sls and -4sls and -6sls if -5sls didnt work>
         % load('./_PSFs/PSFs17-Apr-2021 16:18:25.mat')      % z0 = -2 sls 
         % load('./_PSFs/PSFs26-Apr-2021 05:15:18.mat')      % z0 = -4 sls  
-          load('./_PSFs/PSFs20-Apr-2021 05:40:28.mat')      % z0 = -6 sls
+          load('./_PSFs/PSFs25-May-2021 01:34:24.mat')      % z0 = -5 sls
+        % load('./_PSFs/PSFs20-Apr-2021 05:40:28.mat')      % z0 = -6 sls
         
         % load emhist (for camera noise model)
         load('./_emhist/emhist_29-Apr-2021 02:09:25.mat');  % upt to 100 photons
