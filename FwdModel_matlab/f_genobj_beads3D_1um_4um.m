@@ -17,6 +17,9 @@ function X0 = f_genobj_beads3D_1um_4um(N_beads,pram)
   radii       = r_range(randi([1:length(r_range)],N_beads,1));
   norm_int    = normrnd(1,0.1,N_beads,1);                           % normalized intensity
   
+  % boost up small bead's intensity by 5x
+  norm_int(radii == r_range(1)) = norm_int(radii == r_range(1))*5;
+  
   X0          = single(zeros(Ny0,Nx0,Nz0));
   
   [Y,X,Z]     = meshgrid(1:Ny0,1:Nx0,1:Nz0);
